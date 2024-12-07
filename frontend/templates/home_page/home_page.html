@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ космических снимков</title>
+    <link rel="stylesheet" href="../../static/css/home_page.css">
+</head>
+<body class="page">
+    <!-- Шапка страницы -->
+    <header class="header">
+        <div class="header__logo">
+            <a href="/">
+                <img src="../../static/img/main-logo.jpg" alt="Логотип" class="header__logo-img">
+            </a>
+        </div>
+        <nav class="header__nav">
+            <a href="#history" class="header__nav-link">История</a>
+            <a href="#google-maps" class="header__nav-link">Google Карты</a>
+            <a href="login">
+                <img src="../../static/img/logo.png" alt="Личный кабинет" class="header__profile-icon">
+            </a>
+        </nav>
+    </header>
+
+    <!-- Основной контейнер с grid -->
+    <main class="main">
+        <!-- Карта (слева) -->
+        <section class="main__content">
+            <div class="map__wrapper" id="map-container">
+                <img src="" alt="Карта изображений" class="map__image" id="uploaded-image">
+            </div>
+        </section>
+
+        <!-- Правая панель -->
+        <section class="main__sidebar">
+            <h2 class="sidebar__title">Settings</h2>
+
+            <!-- Надписи -->
+            <div class="results__summary">
+                <p>Обнаружено: <span id="object-count">N</span> объектов</p>
+                <p>Самолёты: M avg conf: <span id="plane-confidence">XX%</span></p>
+                <p>Машины: K avg conf: <span id="car-confidence">XX%</span></p>
+                <p>Time: XX ms; average confidence: XX%</p>
+            </div>
+
+            <!-- Кнопки -->
+            <button class="results__btn-select-all">Выделить все классы</button>
+            <button class="results__btn-clear">Снять выделение</button>
+
+            <!-- Загрузка файла -->
+            <label for="upload-image" class="upload__label">Выберите файл</label>
+            <input type="file" id="upload-image" class="upload__input" accept="image/*">
+
+            <!-- Список объектов -->
+            <div class="results__list">
+                <div class="results__item results__item--plane">
+                    Самолёт 1 ______ уверенность: 100%
+                </div>
+                <div class="results__item results__item--plane">
+                    Самолёт 2 ______ уверенность: 97%
+                </div>
+                <div class="results__item results__item--car">
+                    Машина 1 ______ уверенность: 96%
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="../../static/js/script.js"></script>
+</body>
+</html>
