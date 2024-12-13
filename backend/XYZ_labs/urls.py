@@ -20,4 +20,5 @@ urlpatterns = [
     path('login/', include('login.urls')),
     path('', include('home_page.urls')),
     path('admin/', admin.site.urls),
+    path('ml-api/', include('ml_service.urls')),
 ]
