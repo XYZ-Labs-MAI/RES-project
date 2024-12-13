@@ -15,7 +15,8 @@ NUM_PROCESS = 2
 
 def process_image(image_queue, result_queue):  # чек this
     '''
-        обработка картинки
+    обработка картинки
+
     '''
     local_model = YOLO('backend/ml_service/models/yolo11m-obb.pt')  # инициализация модели
     print(local_model)
@@ -31,7 +32,9 @@ def process_image(image_queue, result_queue):  # чек this
 
 def start_worker_processes(num_processes, image_queue, result_queue):
     '''
-        параллеливание на процессы
+    параллеливание на процессы
+
+    params: num_processes -- кол-во процессов
     '''
     processes = []
     for i in range(num_processes):
@@ -43,7 +46,7 @@ def start_worker_processes(num_processes, image_queue, result_queue):
 
 def create_dict(**kwargs) -> dict:
     '''
-        преобразует list из results в dict
+    преобразует list из results в dict
     '''
 
     keys = ['confidence', 'name', 'xmax', 'xmin', 'ymax', 'ymin']
@@ -53,7 +56,9 @@ def create_dict(**kwargs) -> dict:
 
 def get_predictions(results) -> dict:
     '''
-        получает результаты работы YOLO и преобразует в dict для вывода
+    получает результаты работы YOLO и преобразует в dict для вывода
+    
+    params: results -- list предиктов модели
     '''
     image_height, image_width = results.orig_shape
     names = results.names
@@ -92,8 +97,9 @@ def invalid_request(request):
 
 
 def test(image, image_queue, result_queue):
-    #with open(image_path, 'rb') as image:
-        #image = image_file.read()           
+    # ошибка файл дампа на винде, передаю агрументы как путь, а не как файл (аккуратно с кодом)
+    #with open(image_path, 'rb') as image:      
+   
     image_id = str(uuid4())                #  id картинки для менеджа
     image_queue.put((image, image_id))          #  закидываем картинку в очередь на процесс
     image_queue.join()                          #  join-ним процессы
