@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'login',
     'home_page',
     'ml_service',
+    'register_page',
 ]
 
 MIDDLEWARE = [
