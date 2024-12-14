@@ -1,0 +1,135 @@
+@keyframes neonGlow {
+    0% {
+        text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff;
+    }
+    50% {
+        text-shadow: 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #fff;
+    }
+    100% {
+        text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff;
+    }
+}
+
+
+body.page {
+    font-family: 'Arial', sans-serif;
+    background: #1a1a1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: #fff;
+}
+
+.content {
+    background: #2a2a2a; 
+    padding: 40px;
+    border-radius: 15px;
+    border: 2px solid #fff; 
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); 
+    width: 350px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.header h1 {
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: #fff;
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff;
+}
+
+.text-label {
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 5px;
+    gap: 100px;
+}
+
+.text-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #fff; 
+    border-radius: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+    background: #333; 
+    color: #fff;
+    transition: box-shadow 0.3s ease;
+}
+
+.text-input:focus {
+    outline: none;
+    box-shadow: 0 0 10px #fff, 0 0 20px #fff; 
+}
+
+.password-container {
+    position: relative;
+    height: 40px; 
+    gap: 10px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 12px;
+    transition: text-shadow 0.3s ease;
+}
+
+.toggle-password:hover {
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff; 
+}
+
+.buttons {
+    margin-top: 20px;
+}
+
+.confirm {
+    width: 100%;
+    padding: 12px;
+    background: #fff;
+    border: none;
+    border-radius: 5px;
+    color: #000;
+    font-size: 16px;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+}
+
+.confirm:hover {
+    box-shadow: 0 0 10px #fff, 0 0 20px #fff; 
+}
+
+.confirm:active {
+    background: #ccc;
+}
+
+.login-link {
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.neon-link {
+    color: #fff;
+    text-decoration: none;
+    transition: text-shadow 0.3s ease;
+}
+
+.neon-link:hover {
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff; 
+}
+
+.neon-text {
+    animation: neonGlow 2s infinite;
+}
