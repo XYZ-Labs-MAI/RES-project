@@ -1,39 +1,89 @@
-# from ninja import NinjaAPI, File
-# from ninja.responses import Response
+from ninja import NinjaAPI, File
+from ninja.responses import Response
+from ninja.files import UploadedFile
 from ultralytics import YOLO
+from pydantic import BaseModel, Field
 import cv2
+from django.views.decorators.csrf import csrf_exempt
 from multiprocessing import Manager, Process, freeze_support, set_start_method
-from uuid import uuid4
+import uuid
+import os
+import tempfile
 
-# manager = Manager()
-# image_queue = manager.Queue()  # создаёт очередь FIFO для подачи данных на обработку
-# result_queue = manager.Queue()  # вывод данных
+manager = Manager()
+image_queue = manager.Queue()  # создаёт очередь FIFO для подачи данных на обработку
+result_queue = manager.Queue()  # вывод данных
 NUM_PROCESS = 2
 
-# api = NinjaAPI()  # для создания api работы с моделькой (back и front связывается с моделькой по api)
+api = NinjaAPI()  # для создания api работы с моделькой (back и front связывается с моделькой по api)
 
+# Pydantic-модель для обработки файла
+class FileUpload(BaseModel):
+    image: UploadedFile = File(...)
 
-def process_image(image_queue, result_queue):  # чек this
+    class Config:
+        arbitrary_types_allowed = True
+
+def process_image(image_queue, result_queue):
     '''
-    обработка картинки
-
+    Обработка картинки
     '''
-    local_model = YOLO('backend/ml_service/models/yolo11m-obb.pt')  # инициализация модели
-    print(local_model)
+    try:
+        # Инициализация модели YOLO один раз
+        local_model = YOLO('backend/ml_service/models/yolo11m-obb.pt')
+        print("Model initialized:", local_model)
+    except Exception as e:
+        print(f"Error initializing model: {e}")
+        return
+
     while True:
-        image_path, image_id = image_queue.get()
-        if image_path is None:
-            break                                 # изображение не найдено
-        img = cv2.imread(image_path,1)
-        results = local_model(img)[0]
-        result_queue.put((image_id, get_predictions(results)))  # закидываем вывод в result очередь
-        image_queue.task_done()  # процесс закончен
+        try:
+            # Получаем изображение из очереди
+            image_path, image_id = image_queue.get()
+            if image_path is None:
+                print("Received None, stopping process")
+                break  # Останавливаем процесс
 
+            # Проверяем, существует ли файл
+            if not os.path.exists(image_path):
+                print(f"File not found: {image_path}")
+                result_queue.put((image_id, "File not found"))
+                image_queue.task_done()
+                continue
+
+            # Читаем изображение
+            img = cv2.imread(image_path, 1)
+            if img is None:
+                print(f"Failed to read image: {image_path}")
+                result_queue.put((image_id, "Failed to read image"))
+                image_queue.task_done()
+                continue
+
+            # Обрабатываем изображение с помощью модели
+            try:
+                results = local_model(img)[0]
+                predictions = get_predictions(results)  # Ваша функция для обработки результатов
+                result_queue.put((image_id, predictions))
+            except Exception as e:
+                print(f"Error processing image {image_path}: {e}")
+                result_queue.put((image_id, "Error processing image"))
+
+            # Помечаем задачу как выполненную
+            image_queue.task_done()
+
+            # Удаляем временный файл
+            try:
+                os.remove(image_path)
+                print(f"Deleted temporary file: {image_path}")
+            except Exception as e:
+                print(f"Error deleting file {image_path}: {e}")
+
+        except Exception as e:
+            print(f"Unexpected error in process_image: {e}")
 
 def start_worker_processes(num_processes, image_queue, result_queue):
     '''
     параллеливание на процессы
-
     params: num_processes -- кол-во процессов
     '''
     processes = []
@@ -41,23 +91,19 @@ def start_worker_processes(num_processes, image_queue, result_queue):
         process = Process(target=process_image, args=(image_queue, result_queue))
         process.start()
         processes.append(process)
-    return processes #  для винды обязательно / для линукса отключить
-
+    return processes  # для винды обязательно / для линукса отключить
 
 def create_dict(**kwargs) -> dict:
     '''
     преобразует list из results в dict
     '''
-
     keys = ['confidence', 'name', 'xmax', 'xmin', 'ymax', 'ymin']
     result_dict = {key: kwargs.get(key, None) for key in keys}
     return result_dict
 
-
 def get_predictions(results) -> dict:
     '''
     получает результаты работы YOLO и преобразует в dict для вывода
-    
     params: results -- list предиктов модели
     '''
     image_height, image_width = results.orig_shape
@@ -76,55 +122,50 @@ def get_predictions(results) -> dict:
         "width": int(image_width),
     }
 
-
-'''
-#  boiler-plate code ПРОЧЕКАТЬ ЕГО 
-@api.post("/process-image/")
-def process_image(request, image: File):
+@api.post("/process-image/", response={200: dict, 400: dict})
+def process_image(request, image: UploadedFile = File(...)):
+    print("GOOD")
     if image:
-        image_id = str(uuid.uuid4())            #  id картинки для менеджа
-        image_queue.put((image, image_id))      #  закидываем картинку в очередь на процесс
-        image_queue.join()                      #  join-ним процессы
-        result = result_queue.get(image_id)
-        return {"image_id": image_id, "result": result}
+        image_id = str(uuid.uuid4())  # id картинки для менеджа
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
+            temp_file.write(image.read())
+            temp_file_path = temp_file.name
+        image_queue.put((temp_file_path, image_id)) # закидываем картинку в очередь на процесс
+        print('25')
+        image_queue.join()  # join-ним процессы
+        print('52')
+        result = result_queue.get()
+        print('2')
+        return {"image_id": image_id, "result": result[1]}
     else:
-        return Response({"error": "No image path provided"}, status=400)
+        return Response({"error": "No image provided"}, status=400)
 
-@api.get("/process-image/")
-def invalid_request(request):
-    return Response({"error": "Invalid request"}, status=400)
-'''
+@api.get("/get-info/")
+def get_info(request):
+    return {"message": "This is a GET request response"}
 
+def aggregate_statistics(results):  # парсинг списка
+    class_stats = {}
+    for result in results:
+        objects = result.get('objects', [])
+        for obj in objects:
+            class_name = obj.get('name')
+            confidence = obj.get('confidence', 0.0)
+            if class_name:
+                if class_name not in class_stats:
+                    class_stats[class_name] = {'count': 0, 'total_confidence': 0.0}
+                class_stats[class_name]['count'] += 1
+                class_stats[class_name]['total_confidence'] += confidence
 
-def test(image, image_queue, result_queue):
-    # ошибка файл дампа на винде, передаю агрументы как путь, а не как файл (аккуратно с кодом)
-    #with open(image_path, 'rb') as image:      
-   
-    image_id = str(uuid4())                #  id картинки для менеджа
-    image_queue.put((image, image_id))          #  закидываем картинку в очередь на процесс
-    image_queue.join()                          #  join-ним процессы
-    result = result_queue.get(image_id)
+    aggregated_stats = {}
+    for class_name, stats in class_stats.items():
+        count = stats['count']
+        total_confidence = stats['total_confidence']
+        if count > 0:
+            average_confidence = total_confidence / count
+            aggregated_stats[class_name] = {
+                'average_confidence': average_confidence,
+                'count': count
+            }
 
-    return {"image_id": image_id, "result": result}
-    
-
-if __name__ == "__main__":
-    #  необходимо для винды, потому что она не юзает fork 
-    freeze_support()
-    set_start_method('spawn')
-    manager = Manager()
-    image_queue = manager.Queue()  # создаёт очередь FIFO для подачи данных на обработку
-    result_queue = manager.Queue()  # вывод данных
-    manager.start
-    #  пока комментим, потому что в винде ошибки из за запуска не в теле "__main__"
-    # start_worker_processes(2)  # два процесса на работу инференса
-
-    processes = start_worker_processes(NUM_PROCESS, image_queue, result_queue) #  под винду 
-    image_path = 'backend/ml_service/test_pictures/su-57.png'
-    response = test(image_path, image_queue, result_queue)
-    print(response)
-
-    for _ in range(NUM_PROCESS):
-        image_queue.put((None, None))
-    for process in processes:
-        process.join()
+    return aggregated_stats
