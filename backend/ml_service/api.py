@@ -37,12 +37,22 @@ def process_image(image_queue, result_queue):
         return
 
     while True:
+<<<<<<< HEAD
         try:
             # Получаем изображение из очереди
             image_path, image_id = image_queue.get()
             if image_path is None:
                 print("Received None, stopping process")
                 break  # Останавливаем процесс
+=======
+        image_path, image_id = image_queue.get()
+        if image_path is None:
+            break                                 # изображение не найдено
+        img = cv2.imread(image_path,1)
+        results = local_model(img)[0]
+        result_queue.put((image_id, get_predictions(results)), get_inference_time(results))  # закидываем вывод в result очередь
+        image_queue.task_done()  # процесс закончен
+>>>>>>> 411eadd6b75f0f11795dd94959f7d800a78299c0
 
             # Проверяем, существует ли файл
             if not os.path.exists(image_path):
@@ -122,9 +132,46 @@ def get_predictions(results) -> dict:
         "width": int(image_width),
     }
 
+<<<<<<< HEAD
 @api.post("/process-image/", response={200: dict, 400: dict})
 def process_image(request, image: UploadedFile = File(...)):
     print("GOOD")
+=======
+
+def get_inference_time(results: str) -> dict:
+    '''
+    Получает время препроцессинга, инференса и постпроцессинга работы YOLO в dict для вывода
+
+
+    params: results -- list предиктов модели
+    '''
+    try:
+
+        if "Speed:" in results:
+            results = results.split("Speed:")[1].strip()
+        times = results.split(",")[:3]
+        preprocess_time = float(times[0].split("ms")[0].strip())
+        inference_time = float(times[1].split("ms")[0].strip())
+        postprocess_time = float(times[2].split("ms")[0].strip())
+
+        return {
+            "preprocess_time_ms": preprocess_time,
+            "inference_time_ms": inference_time,
+            "postprocess_time_ms": postprocess_time,
+        }
+    except (IndexError, ValueError):
+        return {
+            "preprocess_time_ms": None,
+            "inference_time_ms": None,
+            "postprocess_time_ms": None,
+        }
+
+
+'''
+#  boiler-plate code ПРОЧЕКАТЬ ЕГО 
+@api.post("/process-image/")
+def process_image(request, image: File):
+>>>>>>> 411eadd6b75f0f11795dd94959f7d800a78299c0
     if image:
         image_id = str(uuid.uuid4())  # id картинки для менеджа
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
