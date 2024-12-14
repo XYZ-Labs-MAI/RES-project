@@ -1,6 +1,6 @@
 from django.urls import path
-from api import api
+from . import api
 
 urlpatterns = [
-    path('', api.urls),
+    path('', api.process_image_api),
 ]
