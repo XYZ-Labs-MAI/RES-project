@@ -37,22 +37,12 @@ def process_image(image_queue, result_queue):
         return
 
     while True:
-<<<<<<< HEAD
         try:
             # Получаем изображение из очереди
             image_path, image_id = image_queue.get()
             if image_path is None:
                 print("Received None, stopping process")
                 break  # Останавливаем процесс
-=======
-        image_path, image_id = image_queue.get()
-        if image_path is None:
-            break                                 # изображение не найдено
-        img = cv2.imread(image_path,1)
-        results = local_model(img)[0]
-        result_queue.put((image_id, get_predictions(results)), get_inference_time(results))  # закидываем вывод в result очередь
-        image_queue.task_done()  # процесс закончен
->>>>>>> 411eadd6b75f0f11795dd94959f7d800a78299c0
 
             # Проверяем, существует ли файл
             if not os.path.exists(image_path):
@@ -132,11 +122,6 @@ def get_predictions(results) -> dict:
         "width": int(image_width),
     }
 
-<<<<<<< HEAD
-@api.post("/process-image/", response={200: dict, 400: dict})
-def process_image(request, image: UploadedFile = File(...)):
-    print("GOOD")
-=======
 
 def get_inference_time(results: str) -> dict:
     '''
@@ -167,11 +152,9 @@ def get_inference_time(results: str) -> dict:
         }
 
 
-'''
-#  boiler-plate code ПРОЧЕКАТЬ ЕГО 
-@api.post("/process-image/")
-def process_image(request, image: File):
->>>>>>> 411eadd6b75f0f11795dd94959f7d800a78299c0
+@api.post("/process-image/", response={200: dict, 400: dict})
+def process_image(request, image: UploadedFile = File(...)):
+    print("GOOD")
     if image:
         image_id = str(uuid.uuid4())  # id картинки для менеджа
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
