@@ -4,6 +4,7 @@ from ninja.files import UploadedFile
 from ultralytics import YOLO
 from pydantic import BaseModel
 import cv2
+from PIL import Image
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files import File
 import uuid
@@ -45,9 +46,12 @@ def process_image(image_path, image_id):
 
         # Обрабатываем изображение с помощью модели
         try:
-            results = local_model(img)[0]
+            # сев предиктов в виде картинки, аккуратно, очень быстро размножается папками
+            results = local_model(img, save=True, 
+                                  project='backend/ml_service/test_pictures/serv_test/')[0]
             predictions = get_predictions(results)
-            out = (image_id, predictions)
+            time = results.speed
+            out = (image_id, predictions, time)
         except Exception as e:
             print(f"Error processing image {image_path}: {e}")
             return (image_id, "Error processing image")
@@ -69,7 +73,7 @@ def create_dict(**kwargs) -> dict:
     '''
     преобразует list из results в dict
     '''
-    keys = ['confidence', 'name', 'xmax', 'xmin', 'ymax', 'ymin']
+    keys = ['confidence', 'name', 'X', 'Y', 'Width', 'Heigth', 'Rotation']
     result_dict = {key: kwargs.get(key, None) for key in keys}
     return result_dict
 
@@ -82,44 +86,20 @@ def get_predictions(results) -> dict:
     image_height, image_width = results.orig_shape
     names = results.names
     obboxes = results.obb.data.tolist()
+    obj = results.obb
+    # print(obj.xyxyxyxy.tolist(), obj.xyxyxyxyn.tolist(), (( obj.xywhr.tolist() )), sep='\n')
     objects = []
     for obj in obboxes:
-        left, top, right, bottom = int(obj[0]), int(obj[1]), int(obj[2]), int(obj[3])
-        confidence = obj[4]
-        label = int(obj[5])
-        result_dict = create_dict(confidence=confidence, name=names[label], xmax=right, xmin=left, ymax=bottom, ymin=top)
+        X, Y, W, H, R = int(obj[0]), int(obj[1]), int(obj[2]), int(obj[3]), int(obj[4])
+        confidence = obj[5]
+        label = int(obj[6])
+        result_dict = create_dict(confidence=confidence, name=names[label], X=X, Y=Y, Width=W, Heigth=H, Rotation=R)
         objects.append(result_dict)
     return {
         "height": int(image_height),
         "objects": objects,
         "width": int(image_width),
     }
-
-
-def get_inference_time(results: str) -> dict:
-    '''
-    Получает время препроцессинга, инференса и постпроцессинга работы YOLO в dict для вывода
-    params: results -- list предиктов модели
-    '''
-    try:
-        if "Speed:" in results:
-            results = results.split("Speed:")[1].strip()
-        times = results.split(",")[:3]
-        preprocess_time = float(times[0].split("ms")[0].strip())
-        inference_time = float(times[1].split("ms")[0].strip())
-        postprocess_time = float(times[2].split("ms")[0].strip())
-
-        return {
-            "preprocess_time_ms": preprocess_time,
-            "inference_time_ms": inference_time,
-            "postprocess_time_ms": postprocess_time,
-        }
-    except (IndexError, ValueError):
-        return {
-            "preprocess_time_ms": None,
-            "inference_time_ms": None,
-            "postprocess_time_ms": None,
-        }
 
 
 @api.post("/process-image/", response={200: dict, 400: dict})
@@ -132,6 +112,7 @@ def process_image_endpoint(request, image: UploadedFile):
 
         # Process the image
         result = process_image(temp_file_path, image_id)
+        print(aggregate_statistics(result[1]))
         return {"image_id": image_id, "result": result[1]}
     else:
         return Response({"error": "No image provided"}, status=400)
@@ -141,18 +122,17 @@ def get_info(request):
     return {"message": "This is a GET request response"}
 
 
-def aggregate_statistics(results):  # парсинг списка
+def aggregate_statistics(result):  # парсинг списка
     class_stats = {}
-    for result in results:
-        objects = result.get('objects', [])
-        for obj in objects:
-            class_name = obj.get('name')
-            confidence = obj.get('confidence', 0.0)
-            if class_name:
-                if class_name not in class_stats:
-                    class_stats[class_name] = {'count': 0, 'total_confidence': 0.0}
-                class_stats[class_name]['count'] += 1
-                class_stats[class_name]['total_confidence'] += confidence
+    objects = result.get('objects', [])
+    for obj in objects:
+        class_name = obj.get('name')
+        confidence = obj.get('confidence', 0.0)
+        if class_name:
+            if class_name not in class_stats:
+                class_stats[class_name] = {'count': 0, 'total_confidence': 0.0}
+            class_stats[class_name]['count'] += 1
+            class_stats[class_name]['total_confidence'] += confidence
 
     aggregated_stats = {}
     for class_name, stats in class_stats.items():
