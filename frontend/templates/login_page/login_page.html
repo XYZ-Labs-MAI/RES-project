@@ -3,45 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
+    <title>Авторизация</title>
     <link rel="stylesheet" href="../../static/css/login_page.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
 </head>
 <body class="page">
     <div class="content">
         <header class="header">
-            <h2 class="header-title">Sing up</h2>
-            <h3 class="header title-mini">Create your account to get started</h3>
+            <h1 class="neon-text">Авторизация</h1>
         </header>
         <section class="main">
-            <label class="text-label" for="first-name">Email</label>
-            <input class="text-input" type="email" name="first-name" id="first-name" placeholder="Enter your email" required>
-            <br>
-            <label class="text-label" for="password">Password</label>
+            <label class="text-label" for="email">Email</label>
+            <input class="text-input neon-input" type="email" name="email" id="email" placeholder="Введите email" required>
+            <label class="text-label" for="password">Пароль</label>
             <div class="password-container">
-                <input class="text-input" type="password" name="password" id="password" placeholder="Enter your password" required>
-                <button type="button" id="toggle-password" class="toggle-password">Show</button>
+                <input class="text-input neon-input" type="password" name="password" id="password" placeholder="Введите пароль" required>
+                <button type="button" id="toggle-password" class="toggle-password neon-button">Показать</button>
             </div>
         </section>
-        <div class="footer">
-            <input class="buttom-submit" type="submit" value="Sing Up">
-            <h4 class="button-text">Already have an account?
-                <a class="button-registration" href="register">Sign in</a>
-            </h4>
+        <div class="buttons">
+            <button class="confirm neon-button">Войти</button>
+        </div>
+        <div class="login-link">
+            <p>Нет аккаунта? <a href="/login" class="neon-link">Зарегистрироваться</a></p>
         </div>
     </div>
-    <script>
-        const passwordInput = document.getElementById('password');
-        const togglePasswordButton = document.getElementById('toggle-password');
-    
-        togglePasswordButton.addEventListener('click', () => {
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-    
-            togglePasswordButton.textContent = isPassword ? 'Hide' : 'Show';
-        });
-    </script>
 </body>
+<script>
+    const passwordInput = document.getElementById('password');
+    const togglePasswordButton = document.getElementById('toggle-password');
+
+    togglePasswordButton.addEventListener('click', () => {
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+
+        togglePasswordButton.textContent = isPassword ? 'Показать' : 'Скрыть';
+    });
+</script> 
 </html>
