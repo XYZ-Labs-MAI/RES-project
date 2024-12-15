@@ -10,9 +10,7 @@ import uuid
 import os
 import tempfile
 
-
 api = NinjaAPI()  # для создания api работы с моделькой (back и front связывается с моделькой по api)
-
 
 # Pydantic-модель для обработки файла
 class FileUpload(BaseModel):
@@ -33,44 +31,38 @@ def process_image(image_path, image_id):
     '''
     Обработка картинки
     '''
+    try:
+        # Проверяем, существует ли файл
+        if not os.path.exists(image_path):
+            print(f"File not found: {image_path}")
+            return (image_id, "Error file not found")
 
-    while True:
+        # Читаем изображение
+        img = cv2.imread(image_path, 1)
+        if img is None:
+            print(f"Failed to read image: {image_path}")
+            return (image_id, "Error failed to read image")
+
+        # Обрабатываем изображение с помощью модели
         try:
-            # Получаем изображение из очереди
-            if image_path is None:
-                print("Received None, stopping process")
-                break  # Останавливаем процесс
-
-            # Проверяем, существует ли файл
-            if not os.path.exists(image_path):
-                print(f"File not found: {image_path}")
-                return (image_id, "Error file not found")
-
-            # Читаем изображение
-            img = cv2.imread(image_path, 1)
-            if img is None:
-                print(f"Failed to read image: {image_path}")
-                return (image_id, "Error failed to read image")
-
-            # Обрабатываем изображение с помощью модели
-            try:
-                results = local_model(img)[0]
-                predictions = get_predictions(results)
-                out = (image_id, predictions)
-            except Exception as e:
-                print(f"Error processing image {image_path}: {e}")
-                return (image_id, "Error processing image")
-
-            # Удаляем временный файл
-            try:
-                os.remove(image_path)
-                print(f"Deleted temporary file: {image_path}")
-            except Exception as e:
-                print(f"Error deleting file {image_path}: {e}")
-            return out
-
+            results = local_model(img)[0]
+            predictions = get_predictions(results)
+            out = (image_id, predictions)
         except Exception as e:
-            print(f"Unexpected error in process_image: {e}")
+            print(f"Error processing image {image_path}: {e}")
+            return (image_id, "Error processing image")
+
+        # Удаляем временный файл
+        try:
+            os.remove(image_path)
+            print(f"Deleted temporary file: {image_path}")
+        except Exception as e:
+            print(f"Error deleting file {image_path}: {e}")
+        return out
+
+    except Exception as e:
+        print(f"Unexpected error in process_image: {e}")
+        return (image_id, "Unexpected error in process_image")
 
 
 def create_dict(**kwargs) -> dict:
@@ -107,8 +99,6 @@ def get_predictions(results) -> dict:
 def get_inference_time(results: str) -> dict:
     '''
     Получает время препроцессинга, инференса и постпроцессинга работы YOLO в dict для вывода
-
-
     params: results -- list предиктов модели
     '''
     try:
@@ -133,19 +123,15 @@ def get_inference_time(results: str) -> dict:
 
 
 @api.post("/process-image/", response={200: dict, 400: dict})
-def process_image(request, image: UploadedFile):
-    print(image)
-    print(type(image))
+def process_image_endpoint(request, image: UploadedFile):
     if image:
         image_id = str(uuid.uuid4())  # id картинки для менеджа
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
-           temp_file.write(image.read())
-           # temp_file_path = temp_file.name
-        tmp = open(temp_file.name)
-        print(tmp)
-        result = process_image(image, image_id)
-        print(result)
-        temp_file.close()
+            temp_file.write(image.read())
+            temp_file_path = temp_file.name
+
+        # Process the image
+        result = process_image(temp_file_path, image_id)
         return {"image_id": image_id, "result": result[1]}
     else:
         return Response({"error": "No image provided"}, status=400)
