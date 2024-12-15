@@ -46,7 +46,7 @@ document.getElementById("upload-image").addEventListener("change", async functio
                     console.log("Запрос успешно выполнен");
                     const data = await response.json();
                     console.log("Получен ответ от сервера:", data);
-                    updateUI(data); // Обновляем интерфейс с результатами
+                    // updateUI(data); // Обновляем интерфейс с результатами
                 } else {
                     console.error("Ошибка при выполнении запроса. Статус:", response.status);
                     const errorData = await response.json();
