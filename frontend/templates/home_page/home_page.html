@@ -17,9 +17,18 @@
         <nav class="header__nav">
             <a href="#history" class="header__nav-link">История</a>
             <a href="#google-maps" class="header__nav-link">Google Карты</a>
-            <a href="login">
-                <img src="../../static/img/logo.png" alt="Личный кабинет" class="header__profile-icon">
-            </a>
+            
+            {% if user.is_authenticated %}
+                <!-- Если пользователь авторизован — переход на личный кабинет -->
+                <a href="{% url 'profile' %}">
+                    <img src=../../static/img/logo.png alt="Профиль" class="header__profile-icon"> <!-- можно ссылку на аватарку пользователя вставить -->
+                </a>
+            {% else %}
+                <!-- Если не авторизован — переход на логин -->
+                <a href="{% url 'login' %}">
+                    <img src=../../static/img/logo.png alt="Логин" class="header__profile-icon">
+                </a>
+            {% endif %}
         </nav>
     </header>
 
@@ -31,7 +40,6 @@
                 <img src="" alt="Карта изображений" class="map__image" id="uploaded-image">
             </div>
         </section>
-
         <!-- Правая панель -->
         <section class="main__sidebar">
             <h2 class="sidebar__title">Settings</h2>

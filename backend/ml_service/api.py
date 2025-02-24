@@ -151,7 +151,6 @@ def get_inference_time(results: str) -> dict:
             "postprocess_time_ms": None,
         }
 
-
 @api.post("/process-image/", response={200: dict, 400: dict})
 def process_image(request, image: UploadedFile = File(...)):
     print("GOOD")
@@ -162,7 +161,7 @@ def process_image(request, image: UploadedFile = File(...)):
             temp_file_path = temp_file.name
         image_queue.put((temp_file_path, image_id)) # закидываем картинку в очередь на процесс
         print('25')
-        image_queue.join()  # join-ним процессы
+        image_queue.join()  # join-ним процессы после этого никуда не идет из-за многопоточки
         print('52')
         result = result_queue.get()
         print('2')

@@ -40,10 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',# дальше добавляем свои приложения
-    'login',
     'home_page',
     'ml_service',
-    'register_page',
+    'authenticate',
 ]
 
 MIDDLEWARE = [
@@ -57,6 +56,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'XYZ_labs.urls'
+
+AUTH_USER_MODEL = 'authenticate.Users'
 
 TEMPLATES = [
     {
