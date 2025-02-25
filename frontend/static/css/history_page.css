@@ -1,0 +1,186 @@
+:root {
+    --primary-color: #3498db; /* Blue */
+    --secondary-color: #2ecc71; /* Green */
+    --background-color: #ecf0f1; /* Light Gray */
+    --text-color: #2c3e50; /* Dark Gray */
+    --table-header-bg: #34495e; /* Dark Blue/Gray */
+    --table-header-text: #fff;
+    --button-color: #e67e22; /* Orange */
+    --button-hover-color: #d35400;
+    --border-color: #bdc3c7; /* Lighter Gray */
+    --row-hover-color: #d1ecf1; /* Light Blue Hover */
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+.container {
+    width: 95%;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff; /* White background for the container */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 30px;
+    font-size: 2.5em;
+}
+
+/* Table-like Structure */
+.table-container {
+    overflow-x: auto; /* Horizontal scroll for narrow screens */
+}
+
+.request-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.request-table thead {
+    background-color: var(--table-header-bg);
+    color: var(--table-header-text);
+}
+
+.request-table th,
+.request-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.request-table th {
+    font-weight: 600; /* Bolder header text */
+}
+
+.request-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa; /* Slightly darker for even rows */
+}
+
+.request-table tbody tr:hover {
+    background-color: var(--row-hover-color);
+}
+.objects-list {
+    list-style: none; /* Remove bullet points */
+    padding: 0;
+    margin: 0;
+    display: flex; /* Display items inline */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.objects-list li {
+    background-color: var(--secondary-color); /* Green background */
+    color: white;
+    padding: 4px 8px;
+    margin-right: 4px;
+    margin-bottom: 4px; /* Space for wrapping */
+    border-radius: 4px;
+    font-size: 0.85em;
+}
+
+.object-count {
+    font-style: italic;
+    color: var(--primary-color);
+    margin-top: 4px; /* Space above the count */
+}
+
+.more-button {
+    background-color: var(--button-color);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.more-button:hover {
+    background-color: var(--button-hover-color);
+}
+/* Responsive Design */
+@media (max-width: 768px) {
+  .request-table,
+  .request-table thead,
+  .request-table tbody,
+  .request-table th,
+  .request-table td,
+  .request-table tr {
+    display: block;
+  }
+
+  .request-table thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  .request-table tr {
+        border-bottom: 3px solid var(--border-color); /* More prominent separator */
+        margin-bottom: 1em;
+  }
+
+
+  .request-table td {
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    padding-left: 50%;
+    min-height: 30px; /*Ensure some height*/
+  }
+
+  .request-table td:before {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: 45%;
+    padding-right: 10px;
+    white-space: nowrap;
+    content: attr(data-label);
+    font-weight: bold;
+  }
+    .objects-list {
+    display: block; /* Stack object list items on mobile*/
+  }
+
+  .object-count{
+    margin-top: 0.5em;
+  }
+}
+
+
+/* Styles for the loader */
+#loader {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid var(--primary-color);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

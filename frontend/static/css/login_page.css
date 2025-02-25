@@ -1,137 +1,135 @@
-* {
-    margin: 0;
-    padding: 0;
-    font-family: Inter;
+@keyframes neonGlow {
+    0% {
+        text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff;
+    }
+    50% {
+        text-shadow: 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #fff;
+    }
+    100% {
+        text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff;
+    }
 }
 
-.page {
-    background-color: black;
+
+body.page {
+    font-family: 'Arial', sans-serif;
+    background: #1a1a1a;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    margin: 0;
+    color: #fff;
 }
 
 .content {
-    background-color: black;
-    border: 2px solid white;
-    width: 600px;
-    height: 600px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    border-radius: 10%;
-    box-shadow: 0px 0px 10px white;
-}
-
-.header {
-    width: 100%;
-    height: 50px;
-    justify-content: center;
-}
-
-.header-title {
-    margin-top: 15px;
-    color: white;
+    background: #2a2a2a; 
+    padding: 40px;
+    border-radius: 15px;
+    border: 2px solid #fff; 
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5); 
+    width: 350px;
     text-align: center;
-    font-size: 45px;
+    position: relative;
+    overflow: hidden;
 }
 
-.title-mini {
-    text-align: center;
-    color: #bcbcc4;
-    margin-top: 10px;
-}
-
-.main {
-    display: flex;
-    width: 500px;
-    height: 200px;
-    margin: auto;
-    flex-direction: column;
-    gap: 15px;
+.header h1 {
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: #fff;
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff;
 }
 
 .text-label {
-    color: white;
-    font-size: 24px;
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 5px;
+    gap: 100px;
 }
 
 .text-input {
-    border: 0;
     width: 100%;
-    height: 35px;
-    border-bottom: 1px solid #bcbcc4;
-    background-color: transparent;
-    margin-top: 5px;
-    font-size: 24px;
-    font-family: inherit;
-    color: white;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #fff; 
+    border-radius: 5px;
+    font-size: 14px;
+    box-sizing: border-box;
+    background: #333; 
+    color: #fff;
+    transition: box-shadow 0.3s ease;
 }
 
 .text-input:focus {
-    border-bottom: 1px solid #bcbcc4;
     outline: none;
+    box-shadow: 0 0 10px #fff, 0 0 20px #fff; 
 }
 
 .password-container {
     position: relative;
-    display: flex;
-    align-items: center;
+    height: 40px; 
+    gap: 10px;
 }
 
 .toggle-password {
     position: absolute;
     right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
     background: none;
     border: none;
-    color: white;
-    font-size: 16px;
+    color: #fff;
     cursor: pointer;
+    font-size: 12px;
+    transition: text-shadow 0.3s ease;
 }
 
 .toggle-password:hover {
-    color: #bcbcc4;
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff; 
 }
 
-.toggle-password img {
-    width: 24px;
-    height: 24px;
+.buttons {
+    margin-top: 20px;
 }
 
-.toggle-password:hover img {
-    opacity: 0.7;
+.confirm {
+    width: 100%;
+    padding: 12px;
+    background: #fff;
+    border: none;
+    border-radius: 5px;
+    color: #000;
+    font-size: 16px;
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
 }
 
-.footer {
-    margin-bottom: 100px;
+.confirm:hover {
+    box-shadow: 0 0 10px #fff, 0 0 20px #fff; 
 }
 
-.buttom-submit {
-    width: 500px;
-    height: 40px;
-    font-size: 24px;
-    background-color: white;
-    color: black;
-    border-radius: 10%;
+.confirm:active {
+    background: #ccc;
 }
 
-.buttom-submit:hover {
-    background-color: rgb(224, 224, 224);
+.login-link {
+    margin-top: 20px;
+    font-size: 14px;
 }
 
-.button-text {
-    text-align: center;
-    margin-top: 10px;
-    color: rgb(158, 158, 158);
-}
-
-.button-registration {
-    color: white;
+.neon-link {
+    color: #fff;
     text-decoration: none;
+    transition: text-shadow 0.3s ease;
 }
 
-.button-registration:hover {
-    color: #9d9d9d;
+.neon-link:hover {
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff; 
+}
+
+.neon-text {
+    animation: neonGlow 2s infinite;
 }
