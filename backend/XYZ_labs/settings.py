@@ -83,10 +83,15 @@ WSGI_APPLICATION = 'XYZ_labs.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'mydatabase',
+        'USER': 'myuser',
+        'PASSWORD': os.getenv('PASSWORD'), # в .env создайте PASSWORD с вашим паролем для postgresql
+        'HOST': os.getenv('HOST'),  # в .env создайте HOST с вашим хостом для postgresql
+        'PORT': os.getenv('PORT'), # в .env создайте PORT с вашим портом для postgresql
     }
-}
+    }
+
 
 
 # Password validation
