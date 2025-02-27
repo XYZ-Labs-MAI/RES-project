@@ -84,8 +84,8 @@ WSGI_APPLICATION = 'XYZ_labs.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mydatabase',
-        'USER': 'myuser',
+        'NAME': os.getenv('NAME'),
+        'USER': os.getenv('USER'),
         'PASSWORD': os.getenv('PASSWORD'), # в .env создайте PASSWORD с вашим паролем для postgresql
         'HOST': os.getenv('HOST'),  # в .env создайте HOST с вашим хостом для postgresql
         'PORT': os.getenv('PORT'), # в .env создайте PORT с вашим портом для postgresql
