@@ -1,110 +1,101 @@
-// script.js (public/script.js)
+// Функция для создания карточки из шаблона
+function createHistoryCard(data) {
+    const template = document.getElementById("history-card-template").content.cloneNode(true);
+    const card = template.querySelector(".history-card");
 
-function showLoader() {
-    document.getElementById('loader').style.display = 'block';
-}
+    const image = card.querySelector(".history-card__image");
+    image.src = data.imageSrc;
+    image.alt = data.title;
 
-function hideLoader() {
-    document.getElementById('loader').style.display = 'none';
-}
+    card.querySelector(".history-card__title").textContent = data.title;
+    card.querySelector(".history-card__date").textContent = data.date;
 
-// Sample data (now with more varied objects)
-// remove when we have normal calls
-const sampleData = [];
-for (let i = 1; i <= 100; i++) {
-    const objects = [];
-    // More realistic object distribution
-    if (i % 3 === 0) objects.push("car");
-    if (i % 2 === 0) objects.push("person");
-    if (i % 5 === 0) objects.push("tree");
-    if (i % 7 === 0) objects.push("dog");
-    if (i % 11 === 0) objects.push("cat");
-    if (i % 4 === 0) objects.push('bicycle');
-    if (i % 6 === 0) objects.push("building");
-
-    sampleData.push({
-        id: i,
-        date: new Date(2023, 9, i),
-        filename: `image${i}.jpg`,
-        detectedObjects: objects,
+    // Обработчик клика для открытия попапа
+    card.addEventListener("click", function (event) {
+        if (!event.target.classList.contains("history-card__delete")) {
+            openPopup(data);
+        }
     });
-}
 
-let currentPage = 1;
-const itemsPerPage = 10;
-let isFetching = false;
-
-function fetchHistoryData() {
-    if (isFetching) return;
-    isFetching = true;
-    showLoader();
-
-    setTimeout(() => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = startIndex + itemsPerPage;
-        const newData = sampleData.slice(startIndex, endIndex);
-
-        hideLoader();
-        populateTable(newData);
-        currentPage++;
-        isFetching = false;
-    }, 500);
-}
-
-function populateTable(data) {
-    const tableBody = document.getElementById('history-table-body');
-
-    if (data.length === 0 && currentPage === 1) {
-        tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center;">No history data available.</td></tr>`;
-        return;
-    }
-
-    data.forEach(item => {
-        const row = document.createElement('tr');
-
-        // Count occurrences of each object
-        const objectCounts = {};
-        item.detectedObjects.forEach(obj => {
-            objectCounts[obj] = (objectCounts[obj] || 0) + 1;
-        });
-
-        // Create the list items with counts
-        const objectListItems = Object.entries(objectCounts)
-            .map(([object, count]) => `<li>${object} (${count})</li>`)
-            .join('');
-
-        row.innerHTML = `
-            <td data-label="ID">${item.id}</td>
-            <td data-label="Date">${formatDate(item.date)}</td>
-            <td data-label="Filename">${item.filename}</td>
-            <td data-label="Detected Objects">
-                <ul class="objects-list">
-                    ${objectListItems}
-                </ul>
-                <p class="object-count">Total: ${item.detectedObjects.length}</p>
-            </td>
-            <td data-label="More"><a href="/request/${item.id}" class="more-button">More</a></td>
-        `;
-        tableBody.appendChild(row);
+    // Обработчик для удаления карточки
+    const deleteButton = card.querySelector(".history-card__delete");
+    deleteButton.addEventListener("click", function (event) {
+        event.stopPropagation();
+        localStorage.removeItem(data.id);
+        card.remove();
     });
+
+    return card;
 }
 
-function formatDate(dateString){
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString();
-    } catch(error){
-        return "Invalid Date";
-    }
+// Функция для открытия попапа (без innerHTML)
+function openPopup(data) {
+    const popup = document.createElement("div");
+    popup.className = "popup";
+
+    const popupContent = document.createElement("div");
+    popupContent.className = "popup__content";
+
+    const closeButton = document.createElement("span");
+    closeButton.className = "popup__close";
+    closeButton.textContent = "×";
+    closeButton.addEventListener("click", () => popup.remove());
+
+    const title = document.createElement("h2");
+    title.className = "popup__title";
+    title.textContent = data.title;
+
+    const image = document.createElement("img");
+    image.className = "popup__image";
+    image.src = data.imageSrc;
+    image.alt = data.title;
+    image.style.width = "100%";
+
+    const details = document.createElement("div");
+    details.className = "popup__details";
+    details.innerHTML = `<p>Самолет: 98%</p><p>Машина: 95%</p><p>Катер: 90%</p>`;
+
+    popupContent.appendChild(closeButton);
+    popupContent.appendChild(title);
+    popupContent.appendChild(image);
+    popupContent.appendChild(details);
+    popup.appendChild(popupContent);
+
+    document.body.appendChild(popup);
+    popup.style.display = "flex";
 }
 
-// Initial load
-document.addEventListener('DOMContentLoaded', fetchHistoryData);
+// Загрузка данных из localStorage и отображение карточек
+document.addEventListener("DOMContentLoaded", function () {
+    const historyCardsContainer = document.getElementById("history-cards");
+    historyCardsContainer.innerHTML = "";
 
-// Lazy loading on scroll
-window.addEventListener('scroll', () => {
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 200) {
-        if (currentPage * itemsPerPage < sampleData.length )
-            fetchHistoryData();
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const data = JSON.parse(localStorage.getItem(key));
+        const card = createHistoryCard(data);
+        historyCardsContainer.appendChild(card);
     }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const historyCardsContainer = document.getElementById("history-cards");
+    historyCardsContainer.innerHTML = "";
+
+    // Собираем все данные из localStorage в массив
+    const cardsData = [];
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const data = JSON.parse(localStorage.getItem(key));
+        cardsData.push({ id: key, ...data });
+    }
+
+    // Сортируем массив по дате (предполагаем, что data.date - это строка в формате ISO)
+    cardsData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Создаем и добавляем карточки в контейнер
+    cardsData.forEach(data => {
+        const card = createHistoryCard(data);
+        historyCardsContainer.appendChild(card);
+    });
 });
