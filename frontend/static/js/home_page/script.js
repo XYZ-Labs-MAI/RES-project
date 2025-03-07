@@ -46,20 +46,7 @@ document.getElementById("upload-image").addEventListener("change", async functio
                     console.log("Запрос успешно выполнен");
                     const data = await response.json();
                     console.log("Получен ответ от сервера:", data);
-
-                    // Сохраняем данные о запросе в localStorage
-                    const requestData = {
-                        id: Date.now(), // Уникальный ID для карточки
-                        imageSrc: uploadedImage.src,
-                        title: `Карточка ${localStorage.length + 1}`,
-                        date: new Date().toLocaleString(),
-                        resolution: "1024x768",
-                        results: "Нет обнаруженных объектов",
-                        processingTime: "492.0ms",
-                    };
-
-                    localStorage.setItem(requestData.id, JSON.stringify(requestData));
-                    alert("Карточка создана! Перейдите на страницу истории.");
+                    // updateUI(data); // Обновляем интерфейс с результатами
                 } else {
                     console.error("Ошибка при выполнении запроса. Статус:", response.status);
                     const errorData = await response.json();
