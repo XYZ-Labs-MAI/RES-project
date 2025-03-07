@@ -1,35 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Request History</title>
-  <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;600&display=swap" rel="stylesheet">
-</head>
-<body>
-  <div id="loader"></div>
+{% extends 'base.html' %}
 
-  <div class="container">
-    <h1>Request History</h1>
-    <div class="table-container">
-      <table class="request-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Date</th>
-            <th>Filename</th>
-            <th>Detected Objects</th>
-            <th>More</th>
-          </tr>
-        </thead>
-        <tbody id="history-table-body">
-          <!-- Table rows will be added here -->
-        </tbody>
-      </table>
+{% block title %}История запросов{% endblock %}
+
+{% block content %}
+<main class="content">
+    <h1 class="content-header">История запросов</h1>
+    
+    <!-- Контейнер для карточек -->
+    <div class="history-cards" id="history-cards"></div>
+
+    <!-- Шаблон для карточки -->
+    <template id="history-card-template">
+        <div class="history-card">
+            <img class="history-card__image" src="" alt="Изображение">
+            <div class="history-card__content">
+                <h3 class="history-card__title"></h3>
+                <p class="history-card__date"></p>
+                <button class="history-card__delete">Удалить</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Попап -->
+    <div class="popup" id="popup">
+        <div class="popup__content">
+            <span class="popup__close">&times;</span>
+            <img class="popup__image" src="" alt="Детальное изображение">
+            <h2 class="popup__title"></h2>
+            <div class="popup__details"></div>
+        </div>
     </div>
-  </div>
+</main>
 
-  <script src="../../static/js/history_page/script.js"></script>
-</body>
-</html>
+<!-- Подключение стилей -->
+<link rel="stylesheet" href="../../static/css/history_page.css">
+
+<!-- Подключение скрипта -->
+<script src="../../static/js/history_page/history_script.js"></script>
+{% endblock %}
