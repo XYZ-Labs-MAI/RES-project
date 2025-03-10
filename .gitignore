@@ -1,11 +1,3 @@
 venv/
 .venv/
-.env/
-__pycache__/
-*.pyc
-.idea/
-.vscode/
-node_modules/
-build/
-dist/
-backend/*.sqlite3
+

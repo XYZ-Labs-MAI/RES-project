@@ -24,11 +24,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 load_dotenv() #загружаем
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG') == 'True'
 #если ставить DEBUG = False, то нужно менять ALLOWED_HOSTS
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 
 
 # Application definition
@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',# дальше добавляем свои приложения
     'home_page',
-    'ml_service',
     'authenticate',
 ]
 
@@ -62,7 +61,7 @@ AUTH_USER_MODEL = 'authenticate.Users'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / '../frontend/templates',],
+        'DIRS': [BASE_DIR / 'web/templates',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -83,12 +82,12 @@ WSGI_APPLICATION = 'XYZ_labs.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('NAME'),
-        'USER': os.getenv('USER'),
-        'PASSWORD': os.getenv('PASSWORD'), # в .env создайте PASSWORD с вашим паролем для postgresql
-        'HOST': os.getenv('HOST'),  # в .env создайте HOST с вашим хостом для postgresql
-        'PORT': os.getenv('PORT'), # в .env создайте PORT с вашим портом для postgresql
+        'ENGINE': os.getenv('SQL_ENGINE'),
+        'NAME': os.getenv('SQL_DATABASE'),
+        'USER': os.getenv('DATABASE_USERNAME'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'), # в .env создайте PASSWORD с вашим паролем для postgresql
+        'HOST': os.getenv('DATABASE_HOST'),  # в .env создайте HOST с вашим хостом для postgresql
+        'PORT': os.getenv('DATABASE_PORT'), # в .env создайте PORT с вашим портом для postgresql
     }
     }
 
@@ -131,11 +130,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-
-STATICFILES_DIRS = [
-    BASE_DIR / '../frontend/static',  # или любой другой путь, где хранятся статики
-] #подумать как выделить норм путь
-
+STATICFILES_DIRS = [ 
+    BASE_DIR / 'staticfiles',
+]
+STATIC_ROOT = BASE_DIR / 'static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
