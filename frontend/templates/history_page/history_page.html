@@ -5,11 +5,9 @@
 {% block content %}
 <main class="content">
     <h1 class="content-header">История запросов</h1>
-    
-    <!-- Контейнер для карточек -->
+
     <div class="history-cards" id="history-cards"></div>
 
-    <!-- Шаблон для карточки -->
     <template id="history-card-template">
         <div class="history-card">
             <img class="history-card__image" src="" alt="Изображение">
@@ -21,7 +19,6 @@
         </div>
     </template>
 
-    <!-- Попап -->
     <div class="popup" id="popup">
         <div class="popup__content">
             <span class="popup__close">&times;</span>
@@ -32,9 +29,7 @@
     </div>
 </main>
 
-<!-- Подключение стилей -->
 <link rel="stylesheet" href="../../static/css/history_page.css">
 
-<!-- Подключение скрипта -->
 <script src="../../static/js/history_page/history_script.js"></script>
 {% endblock %}

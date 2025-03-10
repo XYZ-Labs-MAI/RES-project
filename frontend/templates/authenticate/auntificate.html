@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <link rel="stylesheet" href="../../static/css/auntificate.css">
+</head>
+<body class="auth">
+    <div class="auth__container" id="authContainer">
+        <div class="auth__form-container auth__form-container--sign-up">
+            <form action="#" class="auth__form">
+                <h1 class="auth__title">Создайте аккаунт</h1>
+                <span class="auth__subtitle">или используйте свой адрес электронной почты для регистрации</span>
+                <input type="text" class="auth__input" placeholder="Имя пользователя" />
+                <input type="email" class="auth__input" placeholder="Email" />
+                <input type="password" class="auth__input" placeholder="Пароль" />
+                <button class="auth__button">Зарегистрироваться</button>
+            </form>
+        </div>
+        <div class="auth__form-container auth__form-container--sign-in">
+            <form action="#" class="auth__form">
+                <h1 class="auth__title">Вход</h1>
+                <span class="auth__subtitle">или используйте свой аккаунт</span>
+                <input type="email" class="auth__input" placeholder="Email" />
+                <input type="password" class="auth__input" placeholder="Пароль" />
+                <a href="#" class="auth__link">Забыли пароль?</a>
+                <button class="auth__button">Вход</button>
+            </form>
+        </div>
+        <div class="auth__overlay-container">
+            <div class="auth__overlay">
+                <div class="auth__overlay-panel auth__overlay-panel--left">
+                    <h1 class="auth__overlay-title">Добро пожаловать!</h1>
+                    <p class="auth__overlay-text">Чтобы оставаться на связи с нами, пожалуйста, войдите в систему, указав свои персональные данные.</p>
+                    <button class="auth__button auth__button--ghost" id="signIn">Войти</button>
+                </div>
+                <div class="auth__overlay-panel auth__overlay-panel--right">
+                    <h1 class="auth__overlay-title">Привет, друг!</h1>
+                    <p class="auth__overlay-text">Введите ваши персональные данные и начните путешествие с нами</p>
+                    <button class="auth__button auth__button--ghost" id="signUp">Зарегистрироваться</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../../static/js/auntificate/auntificate.js"></script>
+</body>
+</html>

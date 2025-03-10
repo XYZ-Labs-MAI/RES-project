@@ -14,7 +14,7 @@ function getCookie(name) {
 }
 
 const csrftoken = getCookie('csrftoken');
-console.log("CSRF-токен:", csrftoken); // Проверьте, что токен получен
+console.log("CSRF-токен:", csrftoken);
 
 document.getElementById("upload-image").addEventListener("change", async function (event) {
     const file = event.target.files[0];
@@ -24,10 +24,9 @@ document.getElementById("upload-image").addEventListener("change", async functio
         const reader = new FileReader();
         reader.onload = async function (e) {
             const uploadedImage = document.getElementById("uploaded-image");
-            uploadedImage.src = e.target.result; // Отображаем загруженное изображение
-            uploadedImage.style.objectFit = "cover"; // Заполняем блок
+            uploadedImage.src = e.target.result;
+            uploadedImage.style.objectFit = "cover";
 
-            // Отправляем изображение на сервер
             const formData = new FormData();
             formData.append("image", file);
             console.log("Формируем FormData с изображением");
@@ -37,7 +36,7 @@ document.getElementById("upload-image").addEventListener("change", async functio
                 const response = await fetch("/ml-api/process-image/", {
                     method: "POST",
                     headers: {
-                        'X-CSRFToken': csrftoken, // Передаём CSRF-токен
+                        'X-CSRFToken': csrftoken,
                     },
                     body: formData,
                 });
@@ -47,9 +46,8 @@ document.getElementById("upload-image").addEventListener("change", async functio
                     const data = await response.json();
                     console.log("Получен ответ от сервера:", data);
 
-                    // Сохраняем данные о запросе в localStorage
                     const requestData = {
-                        id: Date.now(), // Уникальный ID для карточки
+                        id: Date.now(),
                         imageSrc: uploadedImage.src,
                         title: `Карточка ${localStorage.length + 1}`,
                         date: new Date().toLocaleString(),
