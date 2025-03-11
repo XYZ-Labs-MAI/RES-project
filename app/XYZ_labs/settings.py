@@ -89,7 +89,7 @@ DATABASES = {
         'HOST': os.getenv('DATABASE_HOST'),  # в .env создайте HOST с вашим хостом для postgresql
         'PORT': os.getenv('DATABASE_PORT'), # в .env создайте PORT с вашим портом для postgresql
     }
-    }
+}
 
 
 
