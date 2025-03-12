@@ -33,8 +33,8 @@ RUN addgroup --system app && adduser --system --group app
 ENV HOME=/home
 ENV APP_HOME=/home/app
 RUN mkdir -p $APP_HOME
-RUN mkdir -p $APP_HOME/staticfiles
-RUN mkdir -p $APP_HOME/mediafiles # Use -p to create parent directories if they don't exist
+RUN mkdir -p $APP_HOME/web/staticfiles
+RUN mkdir -p $APP_HOME/web/mediafiles # Use -p to create parent directories if they don't exist
 WORKDIR $APP_HOME
 
 # install dependencies
