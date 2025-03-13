@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 load_dotenv() #загружаем
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'foo')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG') == 'True'
+DEBUG = os.getenv('DEBUG', 'True')
 #если ставить DEBUG = False, то нужно менять ALLOWED_HOSTS
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',# дальше добавляем свои приложения
     'home_page',
     'authenticate',
+    'ML',
 ]
 
 MIDDLEWARE = [
@@ -82,12 +83,12 @@ WSGI_APPLICATION = 'XYZ_labs.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('SQL_ENGINE'),
-        'NAME': os.getenv('SQL_DATABASE'),
-        'USER': os.getenv('DATABASE_USERNAME'),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD'), # в .env создайте PASSWORD с вашим паролем для postgresql
-        'HOST': os.getenv('DATABASE_HOST'),  # в .env создайте HOST с вашим хостом для postgresql
-        'PORT': os.getenv('DATABASE_PORT'), # в .env создайте PORT с вашим портом для postgresql
+        'ENGINE': os.getenv('SQL_ENGINE', 'django.db.backends.sqlite3'),
+        'NAME': os.getenv('SQL_DATABASE', 'temp'),
+        'USER': os.getenv('DATABASE_USERNAME', 'temp'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD', 'temp'), # в .env создайте PASSWORD с вашим паролем для postgresql
+        'HOST': os.getenv('DATABASE_HOST', 'db'),  # в .env создайте HOST с вашим хостом для postgresql
+        'PORT': os.getenv('DATABASE_PORT', '5252'), # в .env создайте PORT с вашим портом для postgresql
     }
 }
 
@@ -139,3 +140,8 @@ STATIC_ROOT = BASE_DIR / 'web/static'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# CELERY
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
