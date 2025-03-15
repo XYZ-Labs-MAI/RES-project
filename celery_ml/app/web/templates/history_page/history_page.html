@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}История запросов{% endblock %}
+
+{% block content %}
+<main class="content">
+    <h1 class="content-header">История запросов</h1>
+
+    <div class="history-cards">
+        {% for entry in history_entries %}
+            <div class="history-card">
+                <div class="history-card__images">
+                    <!-- <img class="history-card__image" src="{{ entry.original_image.url }}" alt="Оригинальное изображение"> --> 
+                    <img class="history-card__image" src="{{ entry.processed_image.url }}" alt="Обработанное изображение">
+                </div>
+                <div class="history-card__content">
+                    <p class="history-card__date">Дата: {{ entry.created_at|date:"d E Y" }}</p>
+                    <button class="history-card__delete">Удалить</button>
+                </div>
+            </div>
+        {% empty %}
+            <p>История запросов пуста.</p>
+        {% endfor %}
+    </div>
+</main>
+<link rel="stylesheet" href="../../static/css/history_page.css">
+
+<script src="../../static/js/history_page/history_script.js"></script>
+{% endblock %}

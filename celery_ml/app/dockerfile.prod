@@ -1,0 +1,63 @@
+# Use the official Python runtime image
+FROM python:3.13-slim AS builder
+
+# set work directory
+WORKDIR /usr/src/app
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc
+
+# lint
+RUN pip install --upgrade pip
+COPY . /usr/src/app/
+
+# install python dependencies
+COPY ./requirements.txt .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+
+# Stage 2: Production stage
+FROM python:3.13-slim
+
+# create directory for the app user
+RUN mkdir -p /home/app
+
+# create the app user
+RUN addgroup --system app && adduser --system --group app
+
+# create the appropriate directories
+ENV HOME=/home
+ENV APP_HOME=/home/app
+RUN mkdir -p $APP_HOME
+RUN mkdir -p $APP_HOME/web/staticfiles
+RUN mkdir -p $APP_HOME/web/mediafiles # Use -p to create parent directories if they don't exist
+WORKDIR $APP_HOME
+
+# install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends
+COPY --from=builder /usr/src/app/wheels /wheels
+COPY --from=builder /usr/src/app/requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install --no-cache /wheels/*
+
+# copy entrypoint.prod.sh
+COPY ./entrypoint.prod.sh .
+RUN sed -i 's/\r$//g'  ./entrypoint.prod.sh # Assuming it's copied to the current dir
+RUN chmod +x  ./entrypoint.prod.sh # Assuming it's copied to the current dir
+
+# copy project
+COPY . $APP_HOME
+
+# chown all the files to the app user
+RUN chown -R app:app $APP_HOME
+
+# change to the app user
+USER app
+
+# run entrypoint.prod.sh
+ENTRYPOINT ["bash", "-e", "./entrypoint.prod.sh"]
+CMD ["run"]

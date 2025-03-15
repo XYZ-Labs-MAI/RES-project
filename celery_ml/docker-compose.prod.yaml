@@ -1,0 +1,40 @@
+
+services:
+ db:
+   image: postgres:17
+   ports:
+     - "5432:5432"
+   volumes:
+     - postgres_data:/var/lib/postgresql/data
+   env_file:
+     - .env.prod.db
+ 
+ django-web:
+   build: 
+    context: ./app
+    dockerfile: dockerfile.prod
+   container_name: django-docker
+   command: gunicorn XYZ_labs.wsgi:application --bind 0.0.0.0:8000
+   volumes:
+     - static_volume:/home/app/web/staticfiles
+     - media_volume:/home/app/web/mediafiles
+   expose:
+     - 8000
+   depends_on:
+     - db
+   env_file:
+     - .env.prod
+ nginx:
+   build: ./nginx/
+   ports:
+     - 1337:80
+   depends_on:
+     - django-web
+   volumes:
+     - static_volume:/home/app/web/staticfiles
+     - media_volume:/home/app/web/mediafiles
+volumes:
+   postgres_data:
+   static_volume:
+   media_volume:
+
