@@ -7,19 +7,17 @@ class UserRegisterForm(UserCreationForm): # форма для регистрац
 
     class Meta:
         model = Users  # Здесь связь с кастомной моделью Users
-        fields = ['username',  'password1', 'password2']
+        fields = ['username', 'email',  'password1', 'password2']
 
     def __repr__(self):
         return f"<UserRegisterForm(username={self.cleaned_data.get('username', 'N/A')}, password1=****, password2=****)>"
 
 
-class UserLoginForm(AuthenticationForm): # форма логина
-    username = forms.CharField(label='Имя пользователя', max_length=30, required=True)
-    password = forms.CharField(label='Пароль', widget=forms.PasswordInput)
+class UserLoginForm(AuthenticationForm):  # Форма для логина
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].label = 'Имя пользователя'  # Изменяем лейбл
+        self.fields['password'].label = 'Пароль'  # Изменяем лейбл
 
     def __repr__(self):
         return f"<UserLoginForm(username={self.cleaned_data.get('username', 'N/A')}, password=****)>"
-    
-    class Meta:
-        model = Users
-        fields = ['username', 'password']

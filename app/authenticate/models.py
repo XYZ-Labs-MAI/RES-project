@@ -1,14 +1,40 @@
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
-from django.conf import settings
-from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
-# Create your models here.
+class CustomUserManager(BaseUserManager):
+    def create_user(self, username, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)  # Хэширование пароля
+        user.save(using=self._db)
+        return user
 
-class Users(AbstractUser):
+    def create_superuser(self, username, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(username, email, password, **extra_fields)
+
+class Users(AbstractBaseUser, PermissionsMixin):
+    username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    date_register = models.DateTimeField(default=timezone.now)
+
+    objects = CustomUserManager()
+
+    USERNAME_FIELD = 'username'  # Поле для входа в систему
+
     def __repr__(self):
         return f"<Users(id={self.id}, username='{self.username}', email='{self.email}')>"
 
-class UserHistory(models.Model): # бд для истории запросов пользователя
+    def __str__(self):
+        return self.username
+
+class Users_History(models.Model): # бд для истории запросов пользователя
     user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='history')
     original_image = models.ImageField(upload_to='original_images/')
     processed_image = models.ImageField(upload_to='processed_images/')

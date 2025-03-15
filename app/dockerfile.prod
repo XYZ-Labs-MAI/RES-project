@@ -59,4 +59,5 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # run entrypoint.prod.sh
-ENTRYPOINT ["./entrypoint.prod.sh"]
+ENTRYPOINT ["bash", "-e", "./entrypoint.prod.sh"]
+CMD ["run"]

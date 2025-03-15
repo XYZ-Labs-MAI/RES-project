@@ -14,7 +14,7 @@ function getCookie(name) {
 }
 
 const csrftoken = getCookie('csrftoken');
-console.log("CSRF-токен:", csrftoken); // Проверьте, что токен получен
+console.log("CSRF-токен:", csrftoken);
 
 document.getElementById("upload-image").addEventListener("change", async function (event) {
     const file = event.target.files[0];
@@ -24,10 +24,9 @@ document.getElementById("upload-image").addEventListener("change", async functio
         const reader = new FileReader();
         reader.onload = async function (e) {
             const uploadedImage = document.getElementById("uploaded-image");
-            uploadedImage.src = e.target.result; // Отображаем загруженное изображение
-            uploadedImage.style.objectFit = "cover"; // Заполняем блок
+            uploadedImage.src = e.target.result;
+            uploadedImage.style.objectFit = "cover";
 
-            // Отправляем изображение на сервер
             const formData = new FormData();
             formData.append("image", file);
             console.log("Формируем FormData с изображением");
@@ -37,7 +36,7 @@ document.getElementById("upload-image").addEventListener("change", async functio
                 const response = await fetch("/ml-api/process-image/", {
                     method: "POST",
                     headers: {
-                        'X-CSRFToken': csrftoken, // Передаём CSRF-токен
+                        'X-CSRFToken': csrftoken,
                     },
                     body: formData,
                 });
@@ -46,7 +45,19 @@ document.getElementById("upload-image").addEventListener("change", async functio
                     console.log("Запрос успешно выполнен");
                     const data = await response.json();
                     console.log("Получен ответ от сервера:", data);
-                    // updateUI(data); // Обновляем интерфейс с результатами
+
+                    const requestData = {
+                        id: Date.now(),
+                        imageSrc: uploadedImage.src,
+                        title: `Карточка ${localStorage.length + 1}`,
+                        date: new Date().toLocaleString(),
+                        resolution: "1024x768",
+                        results: "Нет обнаруженных объектов",
+                        processingTime: "492.0ms",
+                    };
+
+                    localStorage.setItem(requestData.id, JSON.stringify(requestData));
+                    alert("Карточка создана! Перейдите на страницу истории.");
                 } else {
                     console.error("Ошибка при выполнении запроса. Статус:", response.status);
                     const errorData = await response.json();

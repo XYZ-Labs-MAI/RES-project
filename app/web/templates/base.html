@@ -7,24 +7,21 @@
     <link rel="stylesheet" href="../../static/css/home_page.css">
 </head>
 <body class="page">
-    <!-- Шапка страницы -->
     <header class="header">
         <div class="header__logo">
-            <a href="/">
-                <img src="../../static/img/main-logo.jpg" alt="Логотип" class="header__logo-img">
+            <a href="{% url 'home_page' %}">
+                <img src="../static/img/business-trip_6596366.png" alt="Логотип" class="header__logo-img">
             </a>
         </div>
         <nav class="header__nav">
-            <a href="#history" class="header__nav-link">История</a>
+            <a href="{% url 'history' %}" class="header__nav-link">История</a>
             <a href="#google-maps" class="header__nav-link">Google Карты</a>
 
             {% if user.is_authenticated %}
-                <!-- Если пользователь авторизован — переход на личный кабинет -->
                 <a href="{% url 'profile' %}">
                     <img src="../../static/img/logo.png" alt="Профиль" class="header__profile-icon">
                 </a>
             {% else %}
-                <!-- Если не авторизован — переход на логин -->
                 <a href="{% url 'login' %}">
                     <img src="../../static/img/logo.png" alt="Логин" class="header__profile-icon">
                 </a>

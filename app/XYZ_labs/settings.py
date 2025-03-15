@@ -88,7 +88,7 @@ DATABASES = {
         'USER': os.getenv('DATABASE_USERNAME', 'temp'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'temp'), # в .env создайте PASSWORD с вашим паролем для postgresql
         'HOST': os.getenv('DATABASE_HOST', 'db'),  # в .env создайте HOST с вашим хостом для postgresql
-        'PORT': os.getenv('DATABASE_PORT', '5252'), # в .env создайте PORT с вашим портом для postgresql
+        'PORT': os.getenv('DATABASE_PORT'), # в .env создайте PORT с вашим портом для postgresql
     }
 }
 
@@ -140,6 +140,9 @@ STATIC_ROOT = BASE_DIR / 'web/static'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# URL логина
+LOGIN_URL = '/authenticate/login'
 
 
 # CELERY

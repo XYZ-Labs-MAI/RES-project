@@ -1,12 +1,38 @@
-{% extends 'base.html' %}
-
-{% block title %}Вход в аккаунт{% endblock %}
-
-{% block content %}
-<h2>Вход в аккаунт</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Войти</button>
-</form>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <link rel="stylesheet" href="../../static/css/login_page.css">
+</head>
+<body class="auth">
+    <div class="auth__container" id="authContainer">
+        <div class="auth__form-container auth__form-container--sign-in">
+            <form method="post" class="auth__form">
+                {% csrf_token %}
+                <h1 class="auth__title">Вход</h1>
+                <span class="auth__subtitle">или используйте свой аккаунт</span>
+                <div class="auth__input-container">
+                    <label for="{{ form.username.id_for_label }}" class="auth__input-label">Логин</label>
+                    {{ form.username }}
+                </div>
+                <div class="auth__input-container">
+                    <label for="{{ form.password.id_for_label }}" class="auth__input-label">Пароль</label>
+                    {{ form.password }}
+                </div>
+                <button type="submit" class="auth__button">Войти</button>
+                <a href="{% url 'register' %}" class="auth__link">Нет аккаунта?</a>
+            </form>
+        </div>
+        <div class="auth__overlay-container">
+            <div class="auth__overlay">
+                <div class="auth__overlay-panel auth__overlay-panel--full">
+                    <h1 class="auth__overlay-title">Добро пожаловать!</h1>
+                    <p class="auth__overlay-text">Чтобы оставаться на связи с нами, пожалуйста, войдите в систему, указав свои персональные данные.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

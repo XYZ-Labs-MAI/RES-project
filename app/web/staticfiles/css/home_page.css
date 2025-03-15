@@ -6,7 +6,6 @@
     min-height: 100vh;
 }
 
-/* Шапка */
 .header {
     display: flex;
     justify-content: space-between;
@@ -38,7 +37,6 @@
     cursor: pointer;
 }
 
-/* Основная сетка */
 .main {
     display: grid;
     grid-template-columns: 3fr 1fr;
@@ -47,7 +45,6 @@
     flex-grow: 1;
 }
 
-/* Карта*/
 .main__content {
     display: flex;
     flex-direction: column;
@@ -78,7 +75,6 @@
     border-radius: 5px;
 }
 
-/* Правая панель */
 .main__sidebar {
     display: flex;
     flex-direction: column;
@@ -105,7 +101,7 @@
 .upload__label {
     display: inline-block;
     padding: 10px 15px;
-    background-color: #4CAF50;
+    background-color: #3282d8;
     color: white;
     border: none;
     border-radius: 8px;
