@@ -1,0 +1,167 @@
+      
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Детекция Объектов</title>
+    <style>
+        body { font-family: sans-serif; }
+        #results { margin-top: 20px; border: 1px solid #ccc; padding: 10px; }
+        .detection-box { border: 2px solid red; position: absolute; pointer-events: none; }
+        .label { background-color: red; color: white; padding: 2px 5px; font-size: 0.8em; position: absolute; top: 0; left: 0; }
+    </style>
+</head>
+<body>
+    <h1>Загрузка изображения для детекции объектов</h1>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+        <div>
+            <label for="imageUpload">Выберите изображение:</label>
+            <input type="file" id="imageUpload" name="image" accept="image/*" required>
+        </div>
+        <button type="submit">Отправить на детекцию</button>
+    </form>
+
+    <div id="status"></div>
+    <div id="results" style="display: none;">
+        <h2>Результаты детекции:</h2>
+        <div id="detectionImageContainer" style="position: relative;">
+            <img id="detectionImage" src="#" alt="Загруженное изображение" style="max-width: 100%; height: auto;">
+            <div id="boundingBoxes"></div>
+        </div>
+        <ul id="detectionList"></ul>
+        <div id="errorDisplay" style="color: red;"></div>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const imageUpload = document.getElementById('imageUpload');
+        const statusDiv = document.getElementById('status');
+        const resultsDiv = document.getElementById('results');
+        const detectionImage = document.getElementById('detectionImage');
+        const boundingBoxesDiv = document.getElementById('boundingBoxes');
+        const detectionListUl = document.getElementById('detectionList');
+        const errorDisplayDiv = document.getElementById('errorDisplay');
+        const detectionImageContainer = document.getElementById('detectionImageContainer');
+
+
+        uploadForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Предотвратить стандартную отправку формы
+
+            statusDiv.textContent = 'Отправка изображения и запуск детекции...';
+            resultsDiv.style.display = 'none'; // Скрыть предыдущие результаты
+            boundingBoxesDiv.innerHTML = ''; // Очистить bounding boxes
+            detectionListUl.innerHTML = ''; // Очистить список детекций
+            errorDisplayDiv.textContent = ''; // Очистить сообщения об ошибках
+
+            const formData = new FormData(uploadForm);
+            const imageFile = imageUpload.files[0];
+            detectionImage.src = URL.createObjectURL(imageFile); // Показать загруженное изображение
+            detectionImage.onload = () => { // После загрузки изображения
+
+                fetch('/detection/upload/', { // URL из urls.py
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.task_id) {
+                        statusDiv.textContent = `Задача детекции запущена. ID задачи: ${data.task_id}. Ожидание результатов...`;
+                        pollForResults(data.task_id); // Начать опрос результатов
+                    } else if (data.error) {
+                        statusDiv.textContent = 'Ошибка при запуске задачи.';
+                        errorDisplayDiv.textContent = `Ошибка: ${data.error}`;
+                        resultsDiv.style.display = 'block'; // Показать блок результатов, чтобы отобразить ошибку
+                    }
+                })
+                .catch(error => {
+                    statusDiv.textContent = 'Ошибка при отправке запроса.';
+                    errorDisplayDiv.textContent = `Ошибка сети: ${error.message}`;
+                    resultsDiv.style.display = 'block'; // Показать блок результатов, чтобы отобразить ошибку
+                });
+            };
+        });
+
+        async function pollForResults(taskId) {
+            const intervalId = setInterval(async () => {
+                const response = await fetch(`/detection/result/${taskId}/`); // URL для получения результата
+                if (!response.ok) {
+                    clearInterval(intervalId);
+                    statusDiv.textContent = 'Ошибка при получении результатов.';
+                    errorDisplayDiv.textContent = `HTTP error! status: ${response.status}`;
+                    resultsDiv.style.display = 'block';
+                    return;
+                }
+                const data = await response.json();
+
+                if (data.task_status === 'SUCCESS') {
+                    clearInterval(intervalId);
+                    statusDiv.textContent = 'Детекция завершена. Результаты ниже.';
+                    displayResults(data.detection_results, detectionImage);
+                    resultsDiv.style.display = 'block'; // Показать блок результатов
+                } else if (data.task_status === 'FAILURE') {
+                    clearInterval(intervalId);
+                    statusDiv.textContent = 'Задача детекции завершилась с ошибкой.';
+                    errorDisplayDiv.textContent = `Ошибка задачи: ${data.error || 'Неизвестная ошибка'}`;
+                    resultsDiv.style.display = 'block'; // Показать блок результатов, чтобы отобразить ошибку
+                } else if (data.task_status === 'PENDING' || data.task_status === 'STARTED') {
+                    statusDiv.textContent = `Задача выполняется (статус: ${data.task_status}). Ожидание результатов...`;
+                }
+            }, 2000); // Опрашивать каждые 2 секунды (можно изменить)
+        }
+
+        function displayResults(detections, imgElement) {
+            if (!detections || detections.length === 0) {
+                detectionListUl.innerHTML = '<li>Объекты не обнаружены.</li>';
+                return;
+            }
+
+            detectionListUl.innerHTML = ''; // Очистить предыдущий список
+            boundingBoxesDiv.innerHTML = ''; // Очистить предыдущие bounding boxes
+
+            const imgWidth = imgElement.naturalWidth;
+            const imgHeight = imgElement.naturalHeight;
+            const containerWidth = detectionImageContainer.offsetWidth;
+            const containerHeight = detectionImageContainer.offsetHeight;
+
+            const widthScale = containerWidth / imgWidth;
+            const heightScale = containerHeight / imgHeight;
+
+            detections.forEach(detection => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${detection.label}: Уверенность ${detection.confidence.toFixed(2)}`;
+                detectionListUl.appendChild(listItem);
+
+                const box = detection.box; // [x_min, y_min, x_max, y_max]
+                const xMinScaled = box[0] * widthScale;
+                const yMinScaled = box[1] * heightScale;
+                const xMaxScaled = box[2] * widthScale;
+                const yMaxScaled = box[3] * heightScale;
+
+                const bboxElement = document.createElement('div');
+                bboxElement.className = 'detection-box';
+                bboxElement.style.left = `${xMinScaled}px`;
+                bboxElement.style.top = `${yMinScaled}px`;
+                bboxElement.style.width = `${xMaxScaled - xMinScaled}px`;
+                bboxElement.style.height = `${yMaxScaled - yMinScaled}px`;
+
+                const labelElement = document.createElement('div');
+                labelElement.className = 'label';
+                labelElement.textContent = `${detection.label} (${detection.confidence.toFixed(2)})`;
+                bboxElement.appendChild(labelElement);
+
+                boundingBoxesDiv.appendChild(bboxElement);
+            });
+        }
+
+
+    </script>
+</body>
+</html>
+
+    
