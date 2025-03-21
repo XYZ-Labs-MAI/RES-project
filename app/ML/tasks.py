@@ -1,15 +1,15 @@
 from celery import shared_task
-from PIL import Image
-import io
-import torch
-import torchvision
-from torch.serialization import safe_globals
+import numpy as np
 import os
 import logging
+from torchvision import transforms
+from ultralytics import YOLO
+import cv2
 
 
 logger = logging.getLogger(__name__)
-MODEL_PATH = './ML/yolo11n-obb.torchscript'
+MODEL_PATH = './ML/yolo11n-obb.pt'
+yolo_model = None
 
 def load_model():
     try:
@@ -20,18 +20,47 @@ def load_model():
             raise FileNotFoundError(log_message)
         
         logger.info('Загрузка модели...')
-        model = torch.jit.load(MODEL_PATH)
-        model.eval()
+        model = YOLO(MODEL_PATH)
+        model.to('cpu')
         return model
     except FileNotFoundError as e:
-        logger.error(f"Ошибка загрузки TorchScript модели: {e}")
+        logger.error(f"Ошибка загрузки модели: {e}")
         return None
     except Exception as e:
-        logger.exception(f"Ошибка при загрузке TorchScript модели: {e}")
+        logger.exception(f"Ошибка при загрузке модели: {e}")
         return None
-    
 
-yolo_model = None
+
+def create_dict(**kwargs) -> dict:
+    '''
+    преобразует list из results в dict
+    '''
+    keys = ['confidence', 'name', 'X', 'Y', 'Width', 'Heigth', 'Rotation']
+    result_dict = {key: kwargs.get(key, None) for key in keys}
+    return result_dict
+
+def get_predictions(results) -> dict:
+    '''
+    получает результаты работы YOLO и преобразует в dict для вывода
+    params: results -- list предиктов модели
+    '''
+    image_height, image_width = results.orig_shape
+    names = results.names
+    obboxes = results.obb.data.tolist()
+    obj = results.obb
+    # print(obj.xyxyxyxy.tolist(), obj.xyxyxyxyn.tolist(), (( obj.xywhr.tolist() )), sep='\n')
+    objects = []
+    for obj in obboxes:
+        X, Y, W, H, R = int(obj[0]), int(obj[1]), int(obj[2]), int(obj[3]), int(obj[4])
+        confidence = obj[5]
+        label = int(obj[6])
+        result_dict = create_dict(confidence=confidence, name=names[label], X=X, Y=Y, Width=W, Heigth=H, Rotation=R)
+        objects.append(result_dict)
+    return {
+        "height": int(image_height),
+        "objects": objects,
+        "width": int(image_width),
+    }
 
 @shared_task
 def detect_objects_task(image_data):
@@ -39,30 +68,31 @@ def detect_objects_task(image_data):
     if yolo_model is None:
         logger.error("Модель не была загружена, задача не может быть выполнена.")
         yolo_model = load_model() # Загрузка модели при первом вызове
-
     try:
-        logger.info('TorchScript модель успешно загружена.')
-        image = Image.open(io.BytesIO(image_data)).convert('RGB')
-        image_tensor = torchvision.transforms.ToTensor()(image).unsqueeze(0)
-        logger.info('Выполнение инференса TorchScript модели...')
+        logger.info('модель успешно загружена.')
+        logger.info('Выполнение инференса модели...')
+        if isinstance(image_data, (bytes, bytearray)):
+            nparr = np.fromstring(image_data, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        else:
+            img = image_data
 
-        with torch.no_grad():
-            # ЗДЕСЬ БАГ
-            results = yolo_model(image_tensor)
-        
+        results = yolo_model(img)[0]
+
         detections = []
-        logger.info(f"Результаты YOLO: {results}")
-        predictions = results.pandas().xyxy[0]
-        for _, row in predictions.iterrows():
-            x_min, y_min, x_max, y_max, confidence, class_id, class_name = row
-            detections.append({
-                'box': [int(x_min), int(y_min), int(x_max), int(y_max)],
-                'label': class_name,
-                'confidence': float(confidence)
-            })
+        detections = get_predictions(results)
+        time = results.speed
         logger.info('Детекция объектов завершена.')
-        return detections
-
+        return (detections, time)
     except Exception as e:
-        print(f"Ошибка при детекции объектов: {e}")
+        logger.error(f"Ошибка при детекции объектов: {e}")
         return None
+    
+def main():
+    img = cv2.imread('ML/test.png', 1)
+    res = detect_objects_task(img)
+    return res
+
+
+if __name__ == "__main__":
+    print(main())

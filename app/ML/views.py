@@ -11,10 +11,10 @@ logger = logging.getLogger(__name__)
 def upload_image(request):
     if request.method == 'POST' and request.FILES.get('image'):
         image_file = request.FILES['image']
-        image_data = image_file.read()
-
+        logger.error(image_file)
+        image = image_file.read()
         # Запуск Celery
-        task = detect_objects_task.delay(image_data) # .delay() запускает задачу в Celery
+        task = detect_objects_task.delay(image) # .delay() запускает задачу в Celery
         logger.info(f"Задача детекции запущена. Task ID: {task.id}")
 
         return JsonResponse({'task_id': task.id, 'status': 'processing'}) # Возвращаем ID задачи
