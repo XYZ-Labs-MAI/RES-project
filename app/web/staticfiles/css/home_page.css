@@ -101,7 +101,7 @@
 .upload__label {
     display: inline-block;
     padding: 10px 15px;
-    background-color: #3282d8;
+    background-color: #3282d1;
     color: white;
     border: none;
     border-radius: 8px;
@@ -109,6 +109,16 @@
     text-align: center;
     font-size: 14px;
     margin-bottom: 10px;
+}
+
+input[type="file"] {
+    opacity: 0; /* Делаем input полностью прозрачным */
+    position: absolute; /* Убираем из потока документа */
+    z-index: -1; /* Перемещаем под другие элементы */
+}
+
+.upload__label:hover {
+    background-color: #0056b3; /* Темно-синий при наведении */
 }
 
 .upload__input {

@@ -39,10 +39,13 @@
 
             <button class="results__btn-select-all">Выделить все классы</button>
             <button class="results__btn-clear">Снять выделение</button>
-
-            <label for="upload-image" class="upload__label">Выберите файл</label>
-            <input type="file" id="upload-image" class="upload__input" accept="image/*">
-
+            <form method="post" enctype="multipart/form-data" id="upload-form">
+                {% csrf_token %}
+                <label for="id_original_image" class="upload__label">
+                    Выберите файл
+                    {{ form.original_image }}  <!-- Django форма -->
+                </label>
+            </form>
             <!-- Список объектов
             <div class="results__list">
                 <div class="results__item results__item--plane">
@@ -58,8 +61,11 @@
         </section>
     </main>
 
-    {% csrf_token %}
-
-    <script src="../../static/js/home_page/script.js"></script>
+    <script>
+        document.getElementById('id_original_image').addEventListener('change', function() {
+            // Автоматически отправляем форму при выборе файла
+            document.getElementById('upload-form').submit();
+        });
+    </script>
 </body>
 </html>

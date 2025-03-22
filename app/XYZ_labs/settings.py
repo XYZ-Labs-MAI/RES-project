@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',# дальше добавляем свои приложения
     'home_page',
     'authenticate',
-    'ML',
 ]
 
 MIDDLEWARE = [
@@ -88,7 +87,7 @@ DATABASES = {
         'USER': os.getenv('DATABASE_USERNAME', 'temp'),
         'PASSWORD': os.getenv('DATABASE_PASSWORD', 'temp'), # в .env создайте PASSWORD с вашим паролем для postgresql
         'HOST': os.getenv('DATABASE_HOST', 'db'),  # в .env создайте HOST с вашим хостом для postgresql
-        'PORT': os.getenv('DATABASE_PORT'), # в .env создайте PORT с вашим портом для postgresql
+        'PORT': os.getenv('DATABASE_PORT', '5252'), # в .env создайте PORT с вашим портом для postgresql
     }
 }
 
