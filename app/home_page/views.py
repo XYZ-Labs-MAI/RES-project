@@ -29,11 +29,6 @@ def main_page(request):
     return render(request, 'home_page/home_page.html', {'form': form})
 
 
-@login_required
-def profile(request): # При нажатии на кнопку юзера
-    return render(request,  ) # должна быть страница пользователя        
-    
-
 @method_decorator(login_required, name='dispatch')
 class HistoryListView(ListView):
     model = Users_History
