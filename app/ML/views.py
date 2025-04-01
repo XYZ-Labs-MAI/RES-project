@@ -36,11 +36,11 @@ def get_detection_result(request, task_id):
     }
     if task_result.status == 'SUCCESS':
         detection_results = task_result.get()
-        result['detection_results'] = detection_results # Получаем результаты детекции
+        result['detection_results'] = detection_results
         logger.info(f"Задача {task_id} выполнена успешно. Результаты: {detection_results}")
     elif task_result.status == 'FAILURE':
         error_message = str(task_result.traceback)
-        result['error'] = error_message # Получаем traceback ошибки
+        result['error'] = error_message
         logger.error(f"Задача {task_id} завершилась с ошибкой: {error_message}")
 
     return JsonResponse(result)
