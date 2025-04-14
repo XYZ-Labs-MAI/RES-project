@@ -11,7 +11,7 @@
             <div class="history-card">
                 <div class="history-card__images">
                     <!-- <img class="history-card__image" src="{{ entry.original_image.url }}" alt="Оригинальное изображение"> --> 
-                    <img class="history-card__image" src="{{ entry.processed_image.url }}" alt="Обработанное изображение">
+                    <img class="history-card__image" src="{{ entry.original_image.url }}" alt="Обработанное изображение">
                 </div>
                 <div class="history-card__content">
                     <p class="history-card__date">Дата: {{ entry.created_at|date:"d E Y" }}</p>

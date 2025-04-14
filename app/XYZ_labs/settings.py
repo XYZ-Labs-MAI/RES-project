@@ -12,12 +12,15 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 import os
 from pathlib import Path
-
+import base64
+import os
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -42,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',# дальше добавляем свои приложения
     'home_page',
     'authenticate',
+    'sentinel_api',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +58,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'XYZ_labs.urls'
+ROOT_URLCONF = 'XYZ_labs.urls'  
 
 AUTH_USER_MODEL = 'authenticate.Users'
 
@@ -147,3 +151,17 @@ LOGIN_URL = '/authenticate/login'
 # CELERY
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
+
+def get_encryption_salt():
+    salt = os.getenv('ENCRYPTION_SALT')
+    if not salt:
+        if DEBUG:
+            return b'dev_salt_placeholder'  # Только для разработки!
+        raise ImproperlyConfigured("ENCRYPTION_SALT environment variable not set")
+    
+    try:
+        return base64.b64decode(salt.encode('latin-1'))
+    except Exception as e:
+        raise ImproperlyConfigured(f"Invalid ENCRYPTION_SALT: {str(e)}")
+
+ENCRYPTION_SALT = get_encryption_salt()

@@ -26,3 +26,5 @@ tornado==6.4.2
 tzdata==2025.1
 vine==5.1.0
 wcwidth==0.2.13
+cryptography
+requests

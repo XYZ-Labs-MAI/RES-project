@@ -6,4 +6,6 @@ urlpatterns = [
     path('profile/', profile_views.show_profile, name='profile'),
     path('history/', views.HistoryListView.as_view(), name = 'history'),
     path('main/', views.main_page, name = 'main_page'),
+
+
 ]

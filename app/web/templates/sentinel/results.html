@@ -1,0 +1,9 @@
+{% for img in images %}
+<div class="image-result">
+    <h4>{{ img.date|date:"Y-m-d" }}</h4>
+    <img src="{{ img.url }}" alt="Sentinel-2 {{ img.date|date:'Y-m-d' }}" class="img-fluid">
+    <a href="{% url 'sentinel_api:download_image' img.filename %}" class="btn btn-primary mt-2">
+        Скачать изображение
+    </a>
+</div>
+{% endfor %}
