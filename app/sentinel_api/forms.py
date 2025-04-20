@@ -1,5 +1,6 @@
 from django import forms
 from datetime import date
+from authenticate.models import Users
 
 
 class SentinelSearchForm(forms.Form):
@@ -128,8 +129,11 @@ class SentinelSearchForm(forms.Form):
             'srs': self.cleaned_data['srs']
         }
 
-3238005,5039853,3244050,5045897
-13.0
-46.0
-14.0
-45.0
+
+class SentinelInstanceForm(forms.ModelForm):
+    class Meta:
+        model = Users
+        fields = ['instance_id']
+        labels = {
+            'sentinel_instance_id': 'Ваш Sentinel Hub Instance ID'
+        }

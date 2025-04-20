@@ -1,12 +1,13 @@
 import requests
 from datetime import date
 import logging
+from django.contrib.auth import get_user_model
 
 # Настройка логгера
 logger = logging.getLogger(__name__)
 
 def get_wms_image(bbox: list, date: date, max_cloud_cover: int,
-                 srs: str, layer: str = 'TRUE_COLOR', image_format: str = 'image/jpeg',
+                 srs: str, user_id: int, layer: str = 'TRUE_COLOR', image_format: str = 'image/jpeg',
                  width: int = 1024, height: int = 1024,) -> bytes:
     """
     Получает изображение через Sentinel Hub WMS API
@@ -28,7 +29,16 @@ def get_wms_image(bbox: list, date: date, max_cloud_cover: int,
         ValueError: При ошибках запроса или неверных данных
     """
     # ID вашего инстанса Sentinel Hub
-    instance_id = 'FIX_LATER'
+    
+    User = get_user_model()
+    try:
+        user = User.objects.get(pk=user_id)
+        instance_id = user.instance_id
+        if not instance_id:
+            raise ValueError("У пользователя не настроен sentinel_instance_id")
+    except User.DoesNotExist:
+        raise ValueError("Пользователь не найден")
+    
     base_url = f"https://services.sentinel-hub.com/ogc/wms/{instance_id}"
     
     # Проверка входных параметров

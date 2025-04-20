@@ -1,15 +1,38 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import SentinelSearchForm
-from .api import get_wms_image
 from datetime import timedelta
 from django.http import FileResponse, Http404
 import os
 from django.conf import settings
 from datetime import datetime
+from functools import wraps
+from .api import get_wms_image
+from .forms import SentinelSearchForm
+from .forms import SentinelInstanceForm
+
+def check_sentinel_instance(view_func):
+    """
+    Проверяет, есть ли у пользователя sentinel_instance_id.
+    Если нет — перенаправляет на страницу с просьбой его ввести.
+    """
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        if not request.user.instance_id:  # Если поле пустое
+            messages.error(
+                request,
+                "Для работы с Sentinel Hub необходимо указать ваш instance_id."
+            )
+            return redirect(reverse('sentinel_api:settings'))  # Перенаправляем на страницу настроек
+        
+        return view_func(request, *args, **kwargs)
+    
+    return _wrapped_view
+
 
 @login_required
+@check_sentinel_instance
 def search_view(request):
     if request.method == 'POST':
         form = SentinelSearchForm(request.POST)
@@ -41,6 +64,7 @@ def search_view(request):
                             bbox=bbox_data['bbox'],
                             srs=bbox_data['srs'],
                             date=target_date,
+                            user_id=request.user.id,
                             max_cloud_cover=max_cloud_cover
                         )
                         
@@ -118,3 +142,17 @@ def download_image(request, filename):
         raise Http404("Ошибка доступа к файлу")
     except Exception as e:
         raise Http404(f"Произошла ошибка при загрузке: {str(e)}")
+    
+
+@login_required
+def settings_view(request):
+    if request.method == 'POST':
+        form = SentinelInstanceForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Instance ID успешно сохранён!")
+            return redirect('sentinel_api:search')  # Используем полное имя
+    else:
+        form = SentinelInstanceForm(instance=request.user)
+    
+    return render(request, 'sentinel/settings.html', {'form': form})

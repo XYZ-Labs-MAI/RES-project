@@ -9,4 +9,5 @@ app_name = 'sentinel_api'
 urlpatterns = [
     path('search/', views.search_view, name='search'),
     path('download/<str:filename>/', download_image, name='download_image'),
+    path('settings/', views.settings_view, name ='settings' ),
 ]  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

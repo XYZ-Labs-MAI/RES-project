@@ -23,6 +23,7 @@ class Users(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_register = models.DateTimeField(default=timezone.now)
+    instance_id = models.CharField(max_length=150, blank=True, null = True)
 
     objects = CustomUserManager()
 
