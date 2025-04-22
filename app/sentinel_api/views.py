@@ -56,7 +56,7 @@ def search_view(request):
                 ][:max_images]
                 
                 images = []
-                BLACK_IMAGE_SIZE = 19876  # Размер черного изображения в байтах
+                BLACK_IMAGE_SIZE = 102459  # Размер черного изображения в байтах
                 
                 for target_date in target_dates:
                     try:

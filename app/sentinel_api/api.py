@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 def get_wms_image(bbox: list, date: date, max_cloud_cover: int,
                  srs: str, user_id: int, layer: str = 'TRUE_COLOR', image_format: str = 'image/jpeg',
-                 width: int = 1024, height: int = 1024,) -> bytes:
+                 width: int = 2500, height: int = 2500,) -> bytes:
     """
     Получает изображение через Sentinel Hub WMS API
     
@@ -21,6 +21,7 @@ def get_wms_image(bbox: list, date: date, max_cloud_cover: int,
         width: Ширина изображения (по умолчанию 1024)
         height: Высота изображения (по умолчанию 1024)
         srs: Система координат (по умолчанию 'EPSG:4326')
+        тест для карт BBOX=3238005,5039853,3244050,5045897
     
     Returns:
         bytes: Бинарные данные изображения
