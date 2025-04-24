@@ -19,7 +19,7 @@ services:
       - POSTGRES_PASSWORD=ADMIN1
       - POSTGRES_DB=xyz_labs_dev
   celery:
-     build: ./app #добавить /app/ML для нормального подключения workers
+     build: ./app
      command: celery --app=XYZ_labs worker --loglevel=DEBUG --logfile=logs/celery.log
      volumes:
       - ./app/:/usr/src/app/
