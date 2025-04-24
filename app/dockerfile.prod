@@ -59,7 +59,7 @@ RUN pip install matplotlib tqdm pyyaml requests psutil
 COPY ./entrypoint.prod.sh .
 RUN sed -i 's/\r$//g' ./entrypoint.prod.sh && \
     chmod +x ./entrypoint.prod.sh
-
+RUN chmod +x ./entrypoint.prod.sh
 # copy the rest of the code & adjust permissions
 COPY . $APP_HOME
 RUN chown -R app:app $APP_HOME
@@ -68,4 +68,4 @@ RUN chown -R app:app $APP_HOME
 USER app
 
 # launch
-ENTRYPOINT ["./entrypoint.prod.sh"]
+ENTRYPOINT ["bash","./entrypoint.prod.sh"]

@@ -6,46 +6,25 @@
     <style>
         body { font-family: sans-serif; margin: 20px; }
         #results { margin-top: 20px; border: 1px solid #ccc; padding: 10px; }
-        .detection-box { 
-            border: 2px solid red; 
-            position: absolute; 
-            pointer-events: none; 
+        #canvasContainer { 
+            position: relative;
+            display: inline-block;
+            border: 1px solid #ccc;
+            background: #f0f0f0;
+            cursor: grab;
+            overflow: hidden;
         }
-        .label { 
-            background-color: red; 
-            color: white; 
-            padding: 2px 5px; 
-            font-size: 0.8em; 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            transform: translateY(-100%); 
-        }
-        #detectionImageContainer { 
-            position: relative; 
-            display: inline-block; 
-        }
-        #uploadForm { 
-            margin-bottom: 20px; 
-            padding: 15px; 
-            border: 1px solid #ddd; 
-            border-radius: 5px; 
-            background-color: #f9f9f9; 
-        }
-        button { 
-            padding: 8px 15px; 
-            background-color: #4CAF50; 
-            color: white; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer; 
-        }
+        canvas { display: block; }
+        #filterControls, #confidenceControl { margin-bottom: 10px; }
+        .filter-item { margin-right: 10px; }
+        #uploadForm { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9; }
+        button { padding: 8px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; }
         button:hover { background-color: #45a049; }
+        label { margin-right: 5px; }
     </style>
 </head>
 <body>
     <h1>Загрузка изображения для детекции объектов</h1>
-
     <form id="uploadForm" enctype="multipart/form-data">
         <div>
             <label for="imageUpload">Выберите изображение:</label>
@@ -53,156 +32,179 @@
         </div>
         <button type="submit">Отправить на детекцию</button>
     </form>
-
     <div id="status"></div>
-    <div id="results" style="display: none;">
+    <div id="results" style="display:none;">
         <h2>Результаты детекции:</h2>
-        <div id="detectionImageContainer">
-            <img id="detectionImage" src="#" alt="Загруженное изображение" style="max-width: 100%; height: auto;">
-            <div id="boundingBoxes"></div>
+        <div id="filterControls"></div>
+        <div id="confidenceControl">
+            <label for="confSlider">Минимальная уверенность: <span id="confValue">0%</span></label>
+            <input type="range" id="confSlider" min="0" max="100" value="0">
+        </div>
+        <div id="canvasContainer">
+            <canvas id="detectionCanvas"></canvas>
         </div>
         <h3>Обнаруженные объекты:</h3>
         <ul id="detectionList"></ul>
-        <div id="errorDisplay" style="color: red;"></div>
+        <div id="errorDisplay" style="color:red;"></div>
     </div>
-
     <script>
         const uploadForm = document.getElementById('uploadForm');
         const imageUpload = document.getElementById('imageUpload');
         const statusDiv = document.getElementById('status');
         const resultsDiv = document.getElementById('results');
-        const detectionImage = document.getElementById('detectionImage');
-        const boundingBoxesDiv = document.getElementById('boundingBoxes');
-        const detectionListUl = document.getElementById('detectionList');
-        const errorDisplayDiv = document.getElementById('errorDisplay');
-        const detectionImageContainer = document.getElementById('detectionImageContainer');
+        const canvas = document.getElementById('detectionCanvas');
+        const container = document.getElementById('canvasContainer');
+        const filterControls = document.getElementById('filterControls');
+        const listUl = document.getElementById('detectionList');
+        const errorDiv = document.getElementById('errorDisplay');
+        const confSlider = document.getElementById('confSlider');
+        const confValue = document.getElementById('confValue');
+        const ctx = canvas.getContext('2d');
 
-        uploadForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
+        let loadedImage = null;
+        let allObjects = [];
+        let filters = {};
+        let minConfidence = 0;
+        let scale = 1, translateX = 0, translateY = 0;
+        let isDragging = false, dragStartX = 0, dragStartY = 0, startX = 0, startY = 0;
 
-            statusDiv.textContent = 'Отправка изображения и запуск детекции...';
+        uploadForm.addEventListener('submit', e => {
+            e.preventDefault();
+            statusDiv.textContent = 'Загрузка изображения и детекция...';
             resultsDiv.style.display = 'none';
-            boundingBoxesDiv.innerHTML = '';
-            detectionListUl.innerHTML = '';
-            errorDisplayDiv.textContent = '';
+            listUl.innerHTML = '';
+            filterControls.innerHTML = '';
+            errorDiv.textContent = '';
+            scale = 1; translateX = 0; translateY = 0;
 
-            const formData = new FormData(uploadForm);
-            const imageFile = imageUpload.files[0];
-            
-            if (!imageFile) {
-                statusDiv.textContent = 'Ошибка: не выбрано изображение';
-                return;
-            }
-
-            detectionImage.src = URL.createObjectURL(imageFile);
-            
-            detectionImage.onload = () => {
-                fetch('/detection/upload/', {
-                    method: 'POST',
-                    body: formData,
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.task_id) {
-                        statusDiv.textContent = `Задача детекции запущена. ID задачи: ${data.task_id}. Ожидание результатов...`;
-                        pollForResults(data.task_id);
-                    } else if (data.error) {
-                        statusDiv.textContent = 'Ошибка при запуске задачи.';
-                        errorDisplayDiv.textContent = `Ошибка: ${data.error}`;
-                        resultsDiv.style.display = 'block';
-                    }
-                })
-                .catch(error => {
-                    statusDiv.textContent = 'Ошибка при отправке запроса.';
-                    errorDisplayDiv.textContent = `Ошибка сети: ${error.message}`;
-                    resultsDiv.style.display = 'block';
-                });
+            const file = imageUpload.files[0];
+            if (!file) { statusDiv.textContent = 'Ошибка: выберите файл.'; return; }
+            const url = URL.createObjectURL(file);
+            loadedImage = new Image();
+            loadedImage.src = url;
+            loadedImage.onload = () => {
+                canvas.width = loadedImage.naturalWidth;
+                canvas.height = loadedImage.naturalHeight;
+                listUl.innerHTML = '';
+                resultsDiv.style.display = 'block';
+                confSlider.value = 0;
+                confValue.textContent = '0%';
+                minConfidence = 0;
+                confSlider.oninput = () => {
+                    minConfidence = confSlider.value / 100;
+                    confValue.textContent = confSlider.value + '%';
+                    initFilters(allObjects);
+                    drawBoxes(allObjects);
+                };
+                const formData = new FormData(uploadForm);
+                fetch('/detection/upload/', { method:'POST', body:formData })
+                .then(r => r.ok ? r.json() : Promise.reject(r))
+                .then(data => data.task_id ? poll(data.task_id) : Promise.reject(data.error))
+                .catch(err => { errorDiv.textContent = 'Ошибка: ' + err; });
             };
         });
 
-        async function pollForResults(taskId) {
-            const intervalId = setInterval(async () => {
-                try {
-                    const response = await fetch(`/detection/result/${taskId}/`);
-                    if (!response.ok) {
-                        clearInterval(intervalId);
-                        statusDiv.textContent = 'Ошибка при получении результатов.';
-                        errorDisplayDiv.textContent = `HTTP error! status: ${response.status}`;
-                        resultsDiv.style.display = 'block';
-                        return;
-                    }
-                    
-                    const data = await response.json();
+        canvas.addEventListener('wheel', e => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            const factor = e.deltaY < 0 ? 1.1 : 0.9;
+            const x = (mx - translateX) / scale;
+            const y = (my - translateY) / scale;
+            scale *= factor;
+            translateX = mx - x * scale;
+            translateY = my - y * scale;
+            drawBoxes(allObjects);
+        });
+        canvas.addEventListener('mousedown', e => {
+            isDragging = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            startX = translateX;
+            startY = translateY;
+            container.style.cursor = 'grabbing';
+        });
+        window.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            translateX = startX + (e.clientX - dragStartX);
+            translateY = startY + (e.clientY - dragStartY);
+            drawBoxes(allObjects);
+        });
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            container.style.cursor = 'grab';
+        });
 
+        function poll(taskId) {
+            statusDiv.textContent = 'Ожидание результатов...';
+            const iv = setInterval(() => {
+                fetch(`/detection/result/${taskId}/`)
+                .then(r => r.ok ? r.json() : Promise.reject(r))
+                .then(data => {
                     if (data.task_status === 'SUCCESS') {
-                        clearInterval(intervalId);
-                        statusDiv.textContent = 'Детекция завершена. Результаты ниже.';
-                        displayResults(data.detection_results);
-                        resultsDiv.style.display = 'block';
+                        clearInterval(iv);
+                        statusDiv.textContent = 'Детекция завершена.';
+                        allObjects = data.detection_results[0].objects;
+                        initFilters(allObjects);
+                        drawBoxes(allObjects);
                     } else if (data.task_status === 'FAILURE') {
-                        clearInterval(intervalId);
-                        statusDiv.textContent = 'Задача детекции завершилась с ошибкой.';
-                        errorDisplayDiv.textContent = `Ошибка задачи: ${data.error || 'Неизвестная ошибка'}`;
-                        resultsDiv.style.display = 'block';
-                    } else if (data.task_status === 'PENDING' || data.task_status === 'STARTED') {
-                        statusDiv.textContent = `Задача выполняется (статус: ${data.task_status}). Ожидание результатов...`;
+                        clearInterval(iv);
+                        errorDiv.textContent = 'Ошибка задачи.';
                     }
-                } catch (error) {
-                    clearInterval(intervalId);
-                    statusDiv.textContent = 'Ошибка при опросе результатов.';
-                    errorDisplayDiv.textContent = `Ошибка: ${error.message}`;
-                    resultsDiv.style.display = 'block';
-                }
+                })
+                .catch(err => { clearInterval(iv); errorDiv.textContent = 'Ошибка: ' + err; });
             }, 2000);
         }
 
-        function displayResults(detectionsData) {
-            if (!detectionsData || detectionsData.length === 0 || !detectionsData[0]?.objects) {
-                detectionListUl.innerHTML = '<li>Объекты не обнаружены.</li>';
-                return;
-            }
-
-            detectionListUl.innerHTML = '';
-            boundingBoxesDiv.innerHTML = '';
-
-            const detection = detectionsData[0];
-            const imgWidth = detection.width;
-            const imgHeight = detection.height;
-            const containerWidth = detectionImageContainer.offsetWidth;
-            const scale = containerWidth / imgWidth;
-
-            detection.objects.forEach(obj => {
-                // Добавляем запись в список
-                const listItem = document.createElement('li');
-                listItem.textContent = `${obj.name} (${(obj.confidence * 100).toFixed(1)}%) - [${obj.X}, ${obj.Y}, ${obj.Width}, ${obj.Heigth}]`;
-                detectionListUl.appendChild(listItem);
-
-                // Создаем bounding box
-                const xMin = obj.X * scale;
-                const yMin = obj.Y * scale;
-                const width = obj.Width * scale;
-                const height = obj.Heigth * scale;
-
-                const boxElement = document.createElement('div');
-                boxElement.className = 'detection-box';
-                boxElement.style.left = `${xMin}px`;
-                boxElement.style.top = `${yMin}px`;
-                boxElement.style.width = `${width}px`;
-                boxElement.style.height = `${height}px`;
-
-                // Добавляем лейбл
-                const labelElement = document.createElement('div');
-                labelElement.className = 'label';
-                labelElement.textContent = `${obj.name} ${(obj.confidence * 100).toFixed(1)}%`;
-                boxElement.appendChild(labelElement);
-
-                boundingBoxesDiv.appendChild(boxElement);
+        function initFilters(objects) {
+            const classes = [...new Set(objects.map(o => o.name))];
+            filters = {};
+            filterControls.innerHTML = '';
+            classes.forEach(cls => {
+                filters[cls] = true;
+                const id = 'filter_' + cls;
+                const wrapper = document.createElement('span');
+                wrapper.className = 'filter-item';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox'; checkbox.id = id; checkbox.checked = true;
+                checkbox.onchange = () => { filters[cls] = checkbox.checked; drawBoxes(allObjects); };
+                const label = document.createElement('label');
+                label.htmlFor = id; label.textContent = cls;
+                wrapper.append(checkbox, label);
+                filterControls.appendChild(wrapper);
             });
+        }
+
+        function drawBoxes(objects) {
+            // Сброс трансформации и очистка
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Применяем зум и пан
+            ctx.setTransform(scale, 0, 0, scale, translateX, translateY);
+            // Рисуем изображение
+            if (loadedImage) ctx.drawImage(loadedImage, 0, 0);
+            // Стили боксов
+            ctx.lineWidth = 2 / scale;
+            ctx.strokeStyle = 'red';
+            ctx.fillStyle = 'red';
+            ctx.font = `${16/scale}px sans-serif`;
+            listUl.innerHTML = '';
+            objects.forEach(obj => {
+                if (!filters[obj.name] || obj.confidence < minConfidence) return;
+                const cx = obj.X, cy = obj.Y, w = obj.Width, h = obj.Heigth, angle = obj.Rotation;
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle);
+                ctx.strokeRect(-w/2, -h/2, w, h);
+                ctx.fillText(`${obj.name} ${(obj.confidence*100).toFixed(1)}%`, -w/2, -h/2 - 4);
+                ctx.restore();
+                const li = document.createElement('li');
+                li.textContent = `${obj.name} ${(obj.confidence*100).toFixed(1)}% [cx=${cx},cy=${cy},w=${w},h=${h},rot=${angle}]`;
+                listUl.appendChild(li);
+            });
+            // Сброс
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
         }
     </script>
 </body>

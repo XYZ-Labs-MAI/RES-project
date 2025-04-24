@@ -20,6 +20,6 @@ urlpatterns = [
     path('', include('home_page.urls')),
     path('admin/', admin.site.urls),
     path('authenticate/', include('authenticate.urls')),
-    path('sentinel_api/', include('sentinel_api.urls'))
+    path('sentinel_api/', include('sentinel_api.urls')),
     path('detection/', include('ML.urls')),
 ]
