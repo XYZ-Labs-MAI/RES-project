@@ -165,3 +165,31 @@ def get_encryption_salt():
         raise ImproperlyConfigured(f"Invalid ENCRYPTION_SALT: {str(e)}")
 
 ENCRYPTION_SALT = get_encryption_salt()
+
+# LOGGING
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        '': { 
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'ML': { 
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'celery': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

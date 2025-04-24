@@ -1,40 +1,93 @@
+version: '3.8' # Specify a version for better compatibility and features
 
 services:
- db:
-   image: postgres:17
-   ports:
-     - "5432:5432"
-   volumes:
-     - postgres_data:/var/lib/postgresql/data
-   env_file:
-     - .env.prod.db
- 
- django-web:
-   build: 
-    context: ./app
-    dockerfile: dockerfile.prod
-   container_name: django-docker
-   command: gunicorn XYZ_labs.wsgi:application --bind 0.0.0.0:8000
-   volumes:
-     - static_volume:/home/app/web/staticfiles
-     - media_volume:/home/app/web/mediafiles
-   expose:
-     - 8000
-   depends_on:
-     - db
-   env_file:
-     - .env.prod
- nginx:
-   build: ./nginx/
-   ports:
-     - 1337:80
-   depends_on:
-     - django-web
-   volumes:
-     - static_volume:/home/app/web/staticfiles
-     - media_volume:/home/app/web/mediafiles
-volumes:
-   postgres_data:
-   static_volume:
-   media_volume:
+  db:
+    image: postgres:17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env.prod.db
+    restart: always # Automatically restart the DB if it crashes
 
+  redis:
+    image: redis:5-alpine 
+    restart: always 
+
+  django-web:
+    build:
+      context: ./app
+      dockerfile: dockerfile.prod
+    container_name: django-docker #
+    command: gunicorn XYZ_labs.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      # Volumes for static and media files served by Nginx
+      - static_volume:/home/app/web/staticfiles
+      - media_volume:/home/app/web/mediafiles
+    expose:
+      # Expose port internally for Nginx, no host mapping needed here
+      - 8000
+    depends_on:
+      - db
+      - redis # Django might connect to redis directly too (e.g., caching)
+    env_file:
+      - .env.prod # Main production environment variables
+    restart: always # Automatically restart the web server
+
+  celery:
+     build:
+       context: ./app
+       # Ensure dockerfile.prod installs Celery dependencies!
+       dockerfile: dockerfile.prod
+     # Production command with INFO level logging, logs go to Docker stdout/stderr
+     command: celery --app=XYZ_labs worker --loglevel=INFO
+     # NO code volume mount in production - code is built into the image
+     # volumes:
+     #  - ./app/:/usr/src/app/  <-- REMOVED FOR PROD
+     env_file:
+       - .env.prod # Use the same env file for consistency
+     depends_on:
+       - django-web
+       - redis      
+       - db         
+     restart: always 
+
+  dashboard: # Celery Flower
+    build:
+      context: ./app
+      # Ensure dockerfile.prod installs Flower dependencies!
+      dockerfile: dockerfile.prod
+    # Command to run Flower - ensure broker URL is correct (ideally from env file)
+    # Consider making the broker URL an env var set in .env.prod
+    command: celery -A XYZ_labs --broker=redis://redis:6379/0 flower --port=5555
+    ports:
+      # Expose Flower dashboard if needed externally
+      - "5555:5555"
+    # NO code volume mount in production
+    # volumes:
+    #  - ./app/:/usr/src/app/  <-- REMOVED FOR PROD
+    env_file:
+      - .env.prod # Use the same env file
+    depends_on:
+      - django-web
+      - redis
+      - celery
+    restart: unless-stopped
+
+  nginx:
+    build: ./nginx/
+    ports:
+      # Map host port 1337 to container port 80
+      - 1337:80
+    volumes:
+      # Mount volumes to serve static/media files collected by django-web
+      - static_volume:/home/app/web/staticfiles
+      - media_volume:/home/app/web/mediafiles
+    depends_on:
+      - django-web # Nginx proxies requests to django-web
+    restart: always # Automatically restart Nginx
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  # redis_data: # Define if using Redis persistence volume
