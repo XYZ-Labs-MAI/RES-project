@@ -1,23 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Анализ космических снимков</title>
-    <link rel="stylesheet" href="../../static/css/home_page.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body class="page">
     <header class="header">
         <div class="header__logo">
             <a href="{% url 'home_page' %}">
-                <img src="../../static/img/business-trip_6596366.png" alt="Логотип" class="header__logo-img">
+                <img class="header__logo-img" src="" alt="">
             </a>
         </div>
+        
         <nav class="header__nav">
             <a href="{% url 'history' %}" class="header__nav-link">История</a>
             <a href="#google-maps" class="header__nav-link">Google Карты</a>
             <a href="{% url 'profile' %}">
-                <img src=../../static/img/logo.png alt="Профиль" class="header__profile-icon">
+                <img src="" alt="Профиль" class="header__profile-icon">
             </a>
         </nav>
     </header>
@@ -25,11 +26,11 @@
     <main class="main">
         <section class="main__content">
             <div class="map__wrapper" id="map-container">
-                <img src="" alt="Карта изображений" class="map__image" id="uploaded-image">
+                <img src="" alt="" class="map__image" id="uploaded-image">
             </div>
         </section>
         <section class="main__sidebar">
-            <h2 class="sidebar__title">Settings</h2>
+            <h2 class="sidebar__title">Настройки</h2>
             <div class="results__summary">
                 <p>Обнаружено: <span id="object-count">N</span> объектов</p>
                 <p>Самолёты: M avg conf: <span id="plane-confidence">XX%</span></p>
@@ -37,35 +38,21 @@
                 <p>Time: XX ms; average confidence: XX%</p>
             </div>
 
-            <button class="results__btn-select-all">Выделить все классы</button>
-            <button class="results__btn-clear">Снять выделение</button>
-            <form method="post" enctype="multipart/form-data" id="upload-form">
-                {% csrf_token %}
-                <label for="id_original_image" class="upload__label">
-                    Выберите файл
-                    {{ form.original_image }}  <!-- Django форма -->
-                </label>
-            </form>
-            <!-- Список объектов
-            <div class="results__list">
-                <div class="results__item results__item--plane">
-                    Самолёт 1 ______ уверенность: 100%
-                </div>
-                <div class="results__item results__item--plane">
-                    Самолёт 2 ______ уверенность: 97%
-                </div>
-                <div class="results__item results__item--car">
-                    Машина 1 ______ уверенность: 96%
-                </div>
-            </div> -->
+            <div class="buttons">
+                <form method="post" enctype="multipart/form-data" id="upload-form">
+                    <!-- {% csrf_token %} -->
+                    <label for="id_original_image" class="upload__label">
+                        Выберите файл
+                        <!-- {{ form.original_image }}  Django форма -->
+                    </label>
+                </form>
+                <button class="results__btn-select-all">Выделить классы</button>
+                <button class="results__btn-clear">Снять выделение</button>
+            </div>
         </section>
     </main>
 
-    <script>
-        document.getElementById('id_original_image').addEventListener('change', function() {
-            // Автоматически отправляем форму при выборе файла
-            document.getElementById('upload-form').submit();
-        });
-    </script>
+    
+    <script src="script.js"></script>
 </body>
 </html>

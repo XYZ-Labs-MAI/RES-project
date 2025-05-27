@@ -1,6 +1,7 @@
 .page {
     margin: 0;
-    font-family: Arial, sans-serif;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -9,14 +10,21 @@
 .header {
     display: flex;
     justify-content: space-between;
+    padding-left: 15px;
+    padding-right: 15px;
     align-items: center;
-    padding: 10px 20px;
-    background-color: #f5f5f5;
+    background-color: #333;
 }
 
 .header__logo-img {
-    height: 80px;
+    width: 100px;
+    height: 100px;
     cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+}
+
+.header__logo-img:hover {
+    transform: scale(1.1);
 }
 
 .header__nav {
@@ -26,9 +34,9 @@
 }
 
 .header__nav-link {
+    font-size: 24px;
     text-decoration: none;
-    color: #333;
-    font-weight: bold;
+    color: white;
     cursor: pointer;
 }
 
@@ -38,6 +46,7 @@
 }
 
 .main {
+    background-color: #1d1d1d;
     display: grid;
     grid-template-columns: 3fr 1fr;
     gap: 20px;
@@ -50,120 +59,111 @@
     flex-direction: column;
     gap: 20px;
     padding: 15px;
-    background-color: #fff;
+    background-color: #333;
     border-radius: 8px;
     box-shadow: 0 0 6px rgba(0, 0, 0, .4);
 }
 
 .map__wrapper {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100%;
+    border: 2px dashed transparent;
+    transition: border-color 0.3s ease;
 }
 
-.map__placeholder {
-    font-size: 18px;
-    color: #aaa;
+.map__wrapper.dragover {
+    border-color: #fff;
 }
 
 .map__image {
+    color: white;
     max-width: 100%;
     max-height: 100%;
     object-fit: cover;
-    border: 1px solid #ddd;
     border-radius: 5px;
 }
 
+
 .main__sidebar {
     display: flex;
+    justify-content: flex-start;
     flex-direction: column;
-    gap: 20px;
-    background-color: #f9f9f9;
     padding: 15px;
+    gap: 40px;
+    background-color: #333;
+    color: white;
     border-radius: 8px;
     box-shadow: 0 0 6px rgba(0, 0, 0, .4);
 }
 
 .sidebar__title {
+    margin: 0;
+    padding: 0;
+    transition: font-size 0.3s ease;
     text-align: center;
-    font-size: 35px;
+    font-size: clamp(2rem, 3vw, 2.5rem);
     font-weight: bold;
     text-transform: uppercase;
-    border: 1px solid red;
 }
 
 .results__summary {
-    margin-bottom: 10px;
-    font-size: 18px;
+    transition: font-size 0.3s ease;
+    font-size: clamp(1.1rem, 1.5vw, 1.2rem);
     line-height: 1.5;
 }
 
-.upload__label {
-    display: inline-block;
-    padding: 10px 15px;
-    background-color: #3282d1;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    text-align: center;
-    font-size: 14px;
-    margin-bottom: 10px;
+.buttons {
+     
+    display: flex;
+    width: 100%;
+    height: auto;
+    flex-direction: column;
+    gap: 30px;
 }
 
-input[type="file"] {
-    opacity: 0; /* Делаем input полностью прозрачным */
-    position: absolute; /* Убираем из потока документа */
-    z-index: -1; /* Перемещаем под другие элементы */
+.upload__label, 
+.results__btn-select-all, 
+.results__btn-clear {
+    padding: 12px 20px;
+    border: none;
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    cursor: pointer;
+    border-radius: 7px;
+    text-align: center;
+}
+
+.upload__label {
+    background-color: #3282d1;
 }
 
 .upload__label:hover {
-    background-color: #0056b3; /* Темно-синий при наведении */
-}
-
-.upload__input {
-    display: none;
-}
-
-.results__btn-clear {
-    padding: 10px 15px;
-    background-color: #FF4C4C;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
+    background-color: #0056b3;
 }
 
 .results__btn-select-all {
-    padding: 10px 15px;
     background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
 }
 
-.results__list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.results__btn-select-all:hover {
+    background-color: #3e8e41;
 }
 
-.results__item {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    text-align: center;
+.results__btn-clear {
+    background-color: #FF4C4C;
 }
 
-.results__item--plane {
-    background-color: #ffefef;
+.results__btn-clear:hover {
+    background-color: #d43f3f;
 }
 
-.results__item--car {
-    background-color: #efffff;
-}
 
 @media (max-width: 768px) {
     .main {
