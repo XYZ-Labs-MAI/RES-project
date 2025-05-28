@@ -3,56 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Анализ космических снимков</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>AI Object Detection | Professional Tool</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../static/css/home_page.css">
 </head>
-<body class="page">
-    <header class="header">
-        <div class="header__logo">
-            <a href="{% url 'home_page' %}">
-                <img class="header__logo-img" src="" alt="">
-            </a>
-        </div>
-        
-        <nav class="header__nav">
-            <a href="{% url 'history' %}" class="header__nav-link">История</a>
-            <a href="#google-maps" class="header__nav-link">Google Карты</a>
-            <a href="{% url 'profile' %}">
-                <img src="" alt="Профиль" class="header__profile-icon">
-            </a>
-        </nav>
-    </header>
-
-    <main class="main">
-        <section class="main__content">
-            <div class="map__wrapper" id="map-container">
-                <img src="" alt="" class="map__image" id="uploaded-image">
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <h1><i class="fas fa-robot"></i> AI Vision Detector</h1>
+                <p class="tagline">Professional object detection system</p>
             </div>
-        </section>
-        <section class="main__sidebar">
-            <h2 class="sidebar__title">Настройки</h2>
-            <div class="results__summary">
-                <p>Обнаружено: <span id="object-count">N</span> объектов</p>
-                <p>Самолёты: M avg conf: <span id="plane-confidence">XX%</span></p>
-                <p>Машины: K avg conf: <span id="car-confidence">XX%</span></p>
-                <p>Time: XX ms; average confidence: XX%</p>
-            </div>
+        </header>
 
-            <div class="buttons">
-                <form method="post" enctype="multipart/form-data" id="upload-form">
-                    <!-- {% csrf_token %} -->
-                    <label for="id_original_image" class="upload__label">
-                        Выберите файл
-                        <!-- {{ form.original_image }}  Django форма -->
-                    </label>
-                </form>
-                <button class="results__btn-select-all">Выделить классы</button>
-                <button class="results__btn-clear">Снять выделение</button>
-            </div>
-        </section>
-    </main>
+        <main class="app-main">
+            <section class="upload-section">
+                <div class="upload-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-cloud-upload-alt"></i> Upload Image</h2>
+                    </div>
+                    <form id="uploadForm" enctype="multipart/form-data" class="upload-form">
+                        <div class="file-upload-wrapper">
+                            <label for="imageUpload" class="file-upload-label">
+                                <div class="upload-icon">
+                                    <i class="fas fa-file-image"></i>
+                                </div>
+                                <div class="upload-text">
+                                    <span class="file-button">Choose Image File</span>
+                                    <span class="file-name" id="fileName">No file selected</span>
+                                </div>
+                            </label>
+                            <input type="file" id="imageUpload" name="image" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="submit-button">
+                            <i class="fas fa-search"></i> Detect Objects
+                        </button>
+                    </form>
+                </div>
+            </section>
 
-    
-    <script src="script.js"></script>
+            <section class="results-section" id="resultsSection">
+                <div class="results-grid">
+                    <div class="visualization-card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-image"></i> Visualization</h2>
+                            <div class="controls">
+                                <div class="zoom-controls">
+                                    <button id="zoomIn" class="control-button"><i class="fas fa-search-plus"></i></button>
+                                    <button id="zoomOut" class="control-button"><i class="fas fa-search-minus"></i></button>
+                                    <button id="resetView" class="control-button"><i class="fas fa-expand"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="canvasContainer" class="canvas-container">
+                            <canvas id="detectionCanvas"></canvas>
+                            <div class="canvas-overlay" id="canvasOverlay">
+                                <div class="overlay-content">
+                                    <i class="fas fa-image"></i>
+                                    <p>Upload an image to begin detection</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="controls-card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-sliders-h"></i> Detection Controls</h2>
+                        </div>
+                        <div class="controls-content">
+                            <div class="control-group">
+                                <label for="confSlider">Confidence Threshold</label>
+                                <div class="slider-container">
+                                    <input type="range" id="confSlider" min="0" max="100" value="0" class="slider">
+                                    <span id="confValue" class="slider-value">0%</span>
+                                </div>
+                            </div>
+
+                            <div class="control-group">
+                                <label>Object Filters</label>
+                                <div id="filterControls" class="filter-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="results-card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-list-ul"></i> Detection Results</h2>
+                            <span id="objectsCount" class="badge">0 objects</span>
+                        </div>
+                        <div class="results-content">
+                            <div id="status" class="status-message">
+                                <i class="fas fa-info-circle"></i> Ready for image upload
+                            </div>
+                            <div id="errorDisplay" class="error-message" style="display: none;"></div>
+                            <div class="results-table-container">
+                                <table class="results-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Object</th>
+                                            <th>Confidence</th>
+                                            <th>Position</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detectionList">
+                                        <!-- Results will be inserted here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>© 2023 AI Vision Detector | Professional Object Detection Tool</p>
+        </footer>
+    </div>
+
+    <script src="../../static/js/home_page/script.js"></script>
 </body>
 </html>
