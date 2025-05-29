@@ -6,21 +6,33 @@
     <title>Профиль пользователя</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="../../static/css/profile_page.css">
-    
 </head>
 <body class="profile">
+    <div class="edge-buttons">
+        <a href="/" class="edge-button left">
+            <img src="../../img/plane.svg" alt="Главная" width="20" height="20">
+            <span>Главная</span>
+        </a>
+        <div class="right-buttons">
+            <a href="../sentinel/search.html" class="edge-button right">
+                <i class="fas fa-shield-alt"></i>
+                <span>Sentinel</span>
+            </a>
+            <a href="home_page.html" class="edge-button right">
+                <i class="fas fa-search"></i>
+                <span>Детекция</span>
+            </a>
+        </div>
+    </div>
+
     <div class="profile__container">
-        <!-- Шапка профиля -->
         <div class="profile__header">
             <div class="profile__avatar" id="avatar">
                 <i class="fas fa-user-circle"></i>
             </div>
-            <h1 class="profile__title">Добро пожаловать, <span class="highlight">User123</span>!</h1>
         </div>
 
-        <!-- Карточка с информацией и редактированием -->
         <div class="profile__card-wrapper">
-            <!-- Режим просмотра -->
             <div class="profile__card view-mode">
                 <div class="card__header">
                     <i class="fas fa-id-card"></i>
@@ -54,14 +66,13 @@
                 </button>
             </div>
 
-            <!-- Режим редактирования -->
             <div class="profile__card edit-mode" style="display: none;">
                 <div class="card__header">
                     <i class="fas fa-user-edit"></i>
                     <h2>Редактирование профиля</h2>
                 </div>
                 <form method="post" class="card__content">
-                  {% csrf_token %}
+                    {% csrf_token %}
                     <div class="form__group">
                         <label for="editUsername">Логин</label>
                         {{ form.username }}
@@ -77,59 +88,23 @@
                 </form>
             </div>
         </div>
-        <!-- История запросов -->
-        <div class="history__section">
-          <div class="history__card">
-              <h2 class="section__title"><i class="fas fa-history"></i> История действий</h2>
-              <div class="timeline">
-                  <div class="timeline__item success">
-                      <div class="timeline__header">
-                          <i class="fas fa-check-circle"></i>
-                          <h3>Успешный запрос</h3>
-                          <span class="timestamp">01.01.2023 12:00</span>
-                      </div>
-                      <p>Поиск по параметрам: "Анализ данных"</p>
-                  </div>
+    </div>
 
-                  <div class="timeline__item warning">
-                      <div class="timeline__header">
-                          <i class="fas fa-exclamation-triangle"></i>
-                          <h3>Частичный успех</h3>
-                          <span class="timestamp">02.01.2023 14:30</span>
-                      </div>
-                      <p>Обновление профиля: изменен email</p>
-                  </div>
+    <script>
+        const editButton = document.getElementById('editButton');
+        const cancelButton = document.getElementById('cancelEdit');
+        const viewMode = document.querySelector('.view-mode');
+        const editMode = document.querySelector('.edit-mode');
 
-                  <div class="timeline__item error">
-                      <div class="timeline__header">
-                          <i class="fas fa-times-circle"></i>
-                          <h3>Ошибка</h3>
-                          <span class="timestamp">03.01.2023 10:15</span>
-                      </div>
-                      <p>Ошибка валидации пароля</p>
-                  </div>
-              </div>
-          </div>
-      </div>
-  </div>
+        editButton.addEventListener('click', () => {
+            viewMode.style.display = 'none';
+            editMode.style.display = 'block';
+        });
 
-  <script>
-      const editButton = document.getElementById('editButton');
-      const cancelButton = document.getElementById('cancelEdit');
-      const viewMode = document.querySelector('.view-mode');
-      const editMode = document.querySelector('.edit-mode');
-
-      editButton.addEventListener('click', () => {
-          viewMode.style.display = 'none';
-          editMode.style.display = 'block';
-      });
-
-      cancelButton.addEventListener('click', () => {
-          editMode.style.display = 'none';
-          viewMode.style.display = 'block';
-      });
-  </script>
+        cancelButton.addEventListener('click', () => {
+            editMode.style.display = 'none';
+            viewMode.style.display = 'block';
+        });
+    </script>
 </body>
 </html>
-
-
