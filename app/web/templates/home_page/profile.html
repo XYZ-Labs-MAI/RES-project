@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль пользователя</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../../static/css/profile_page.css">
+</head>
+<body class="profile">
+    <div class="edge-buttons">
+        <a href="/" class="edge-button left">
+            <img src="../../static/img/plane.svg" alt="Главная" width="20" height="20">
+            <span>Главная</span>
+        </a>
+        <div class="right-buttons">
+            <a href="sentinel_api/search" class="edge-button right">
+                <i class="fas fa-shield-alt"></i>
+                <span>Sentinel</span>
+            </a>
+            <a href="main" class="edge-button right">
+                <i class="fas fa-search"></i>
+                <span>Детекция</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="profile__container">
+        <div class="profile__header">
+            <div class="profile__avatar" id="avatar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+        </div>
+
+        <div class="profile__card-wrapper">
+            <div class="profile__card view-mode">
+                <div class="card__header">
+                    <i class="fas fa-id-card"></i>
+                    <h2>Персональные данные</h2>
+                </div>
+                <div class="card__content">
+                    <div class="data__row">
+                        <i class="fas fa-user icon--accent"></i>
+                        <div class="data__item">
+                            <label>Логин</label>
+                            <p>{{ user.username }}</p>
+                        </div>
+                    </div>
+                    <div class="data__row">
+                        <i class="fas fa-envelope icon--accent"></i>
+                        <div class="data__item">
+                            <label>Почта</label>
+                            <p>{{ user.email }}</p>
+                        </div>
+                    </div>
+                    <div class="data__row">
+                        <i class="fas fa-calendar-alt icon--accent"></i>
+                        <div class="data__item">
+                            <label>Регистрация</label>
+                            <p>{{ user.date_register }}</p>
+                        </div>
+                    </div>
+                </div>
+                <button class="profile__button" id="editButton">
+                    <i class="fas fa-edit"></i> Редактировать
+                </button>
+            </div>
+
+            <div class="profile__card edit-mode" style="display: none;">
+                <div class="card__header">
+                    <i class="fas fa-user-edit"></i>
+                    <h2>Редактирование профиля</h2>
+                </div>
+                <form method="post" class="card__content">
+                    {% csrf_token %}
+                    <div class="form__group">
+                        <label for="editUsername">Логин</label>
+                        {{ form.username }}
+                    </div>
+                    <div class="form__group">
+                        <label for="editEmail">Почта</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="form__actions">
+                        <button type="submit" class="profile__button">Сохранить</button>
+                        <button type="button" class="profile__button button--cancel" id="cancelEdit">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const editButton = document.getElementById('editButton');
+        const cancelButton = document.getElementById('cancelEdit');
+        const viewMode = document.querySelector('.view-mode');
+        const editMode = document.querySelector('.edit-mode');
+
+        editButton.addEventListener('click', () => {
+            viewMode.style.display = 'none';
+            editMode.style.display = 'block';
+        });
+
+        cancelButton.addEventListener('click', () => {
+            editMode.style.display = 'none';
+            viewMode.style.display = 'block';
+        });
+    </script>
+</body>
+</html>

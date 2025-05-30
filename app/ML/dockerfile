@@ -1,0 +1,14 @@
+# ./celery_worker/Dockerfile
+FROM python:3.13-slim
+
+WORKDIR /app/ML
+
+#  Копируем только requirements.txt для celery worker-а.
+#  В production, requirements могут отличаться, если worker-ы легковесные.
+#COPY requirements.txt requirements.txt
+#RUN pip install -r requirements.txt
+
+
+WORKDIR /app
+
+CMD ["celery", "-A", "XYZ_labs", "worker", "--loglevel=INFO"]

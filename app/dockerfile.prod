@@ -1,0 +1,71 @@
+# Stage 1: builder
+FROM python:3.13-slim AS builder
+
+# set work directory
+WORKDIR /usr/src/app
+
+# set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# install build dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc && \
+    rm -rf /var/lib/apt/lists/*
+
+# upgrade pip and build wheels for requirements.txt
+RUN pip install --upgrade pip
+COPY ./requirements.txt .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+
+
+# Stage 2: production
+FROM python:3.13-slim
+
+# create app user & dirs
+RUN mkdir -p /home/app && \
+    addgroup --system app && adduser --system --group app
+
+ENV HOME=/home
+ENV APP_HOME=/home/app
+WORKDIR $APP_HOME
+
+# install runtime system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      libglib2.0-0 \
+      libsm6 \
+      libxrender1 \
+      libxext6 \
+      libgl1-mesa-glx \
+      libgl1 && \
+    rm -rf /var/lib/apt/lists/*
+
+# upgrade pip
+RUN pip install --upgrade pip
+
+# install wheels from builder (requirements.txt)
+COPY --from=builder /usr/src/app/wheels /wheels
+COPY --from=builder /usr/src/app/requirements.txt .
+RUN pip install --no-cache /wheels/*
+
+# explicit installs from dockerfile.dev
+RUN pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+RUN pip install ultralytics --no-deps
+RUN pip install opencv-python opencv-python-headless opencv-contrib-python-headless
+RUN pip install matplotlib tqdm pyyaml requests psutil
+
+# copy and set up entrypoint
+COPY ./entrypoint.prod.sh .
+RUN sed -i 's/\r$//g' ./entrypoint.prod.sh && \
+    chmod +x ./entrypoint.prod.sh
+RUN chmod +x ./entrypoint.prod.sh
+# copy the rest of the code & adjust permissions
+COPY . $APP_HOME
+RUN chown -R app:app $APP_HOME
+
+# switch to non-root user
+USER app
+
+# launch
+ENTRYPOINT ["bash","./entrypoint.prod.sh"]

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Мой Сайт{% endblock %}</title>
+    <link rel="stylesheet" href="../../static/css/home_page.css">
+</head>
+<body class="page">
+    <header class="header">
+        <div class="header__logo">
+            <a href="{% url 'home_page' %}">
+                <img src="../static/img/business-trip_6596366.png" alt="Логотип" class="header__logo-img">
+            </a>
+        </div>
+        <nav class="header__nav">
+            <a href="{% url 'history' %}" class="header__nav-link">История</a>
+            <a href="#google-maps" class="header__nav-link">Google Карты</a>
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}">
+                    <img src="../../static/img/logo.png" alt="Профиль" class="header__profile-icon">
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}">
+                    <img src="../../static/img/logo.png" alt="Логин" class="header__profile-icon">
+                </a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="../../static/js/home_page/script.js"></script>
+</body>
+</html>

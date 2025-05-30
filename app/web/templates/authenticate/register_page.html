@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="../../static/css/registr_page.css">
+</head>
+<body class="auth">
+    <div class="auth__container" id="authContainer">
+        <div class="auth__form-container auth__form-container--sign-up">
+            <form method="post" class="auth__form">
+                {% csrf_token %}
+                <h1 class="auth__title">Регистрация</h1>
+                <div class="auth__input-container">
+                    <label for="username" class="auth__input-label">Логин</label>
+                    {{ form.username }}
+                </div>
+                <div class="auth__input-container">
+                    <label for="email" class="auth__input-label">Почта</label>
+                    {{ form.email }}
+                </div>
+                <div class="auth__input-container">
+                    <label for="password" class="auth__input-label">Пароль</label>
+                    {{ form.password1 }}
+                </div>
+                <div class="auth__input-container">
+                    <label for="confirm_password" class="auth__input-label">Подтвердите пароль</label>
+                    {{ form.password2 }}
+                </div>
+                <button type="submit" class="auth__button">Зарегистрироваться</button>
+                <a href="{% url 'login' %}" class="auth__link">Уже есть аккаунт?</a>
+            </form>
+        </div>
+        <div class="auth__overlay-container">
+            <div class="auth__overlay">
+                <div class="auth__overlay-panel auth__overlay-panel--full">
+                    <h1 class="auth__overlay-title">Добро пожаловать!</h1>
+                    <p class="auth__overlay-text">Чтобы оставаться на связи с нами, пожалуйста, зарегистрируйтесь, указав свои персональные данные.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
