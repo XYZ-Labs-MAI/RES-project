@@ -38,8 +38,9 @@ class Users(AbstractBaseUser, PermissionsMixin):
 class Users_History(models.Model): # бд для истории запросов пользователя
     user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='history')
     original_image = models.ImageField(upload_to='original_images/')
-    processed_image = models.ImageField(upload_to='processed_images/', blank=True, null=True)
+    task_id = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
 
     def __repr__(self):
         return (f"<UserHistory(id={self.id}, user='{self.user.username}', "

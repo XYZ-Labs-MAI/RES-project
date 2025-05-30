@@ -69,7 +69,7 @@ def search_view(request):
                         )
                         
                         # Проверка на черное изображение
-                        if len(image_data) == BLACK_IMAGE_SIZE:
+                        if len(image_data) <= BLACK_IMAGE_SIZE:
                             messages.warning(request, 
                                 f"Изображение за {target_date.strftime('%Y-%m-%d')} не содержит данных (черная картинка)")
                             continue

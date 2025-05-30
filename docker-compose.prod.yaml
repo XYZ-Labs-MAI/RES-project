@@ -22,7 +22,7 @@ services:
     volumes:
       # Volumes for static and media files served by Nginx
       - static_volume:/home/app/web/staticfiles
-      - media_volume:/home/app/web/mediafiles
+      - ./media:/home/app/web/media
     expose:
       # Expose port internally for Nginx, no host mapping needed here
       - 8000
@@ -81,7 +81,7 @@ services:
     volumes:
       # Mount volumes to serve static/media files collected by django-web
       - static_volume:/home/app/web/staticfiles
-      - media_volume:/home/app/web/mediafiles
+      - ./media:/home/app/web/media
     depends_on:
       - django-web # Nginx proxies requests to django-web
     restart: always # Automatically restart Nginx

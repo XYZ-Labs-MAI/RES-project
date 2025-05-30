@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from .tasks import detect_objects_task
 from django.views.decorators.csrf import csrf_exempt
 import logging 
-
+from authenticate.models import Users_History
 
 logger = logging.getLogger(__name__)
 
@@ -13,8 +13,20 @@ def upload_image(request):
         image_file = request.FILES['image']
         logger.error(image_file)
         image = image_file.read()
+        
+        # Получаем пользователя (если аутентифицирован)
+        user = request.user if request.user.is_authenticated else None
+        
+        # Создаем запись в истории
+        history_entry = Users_History(
+            user=user,
+            original_image=image_file  # Django автоматически сохранит файл с оригинальным именем
+        )
+        history_entry.save()
         # Запуск Celery
         task = detect_objects_task.delay(image) # .delay() запускает задачу в Celery
+        history_entry.task_id = task.id
+        history_entry.save()
         logger.info(f"Задача детекции запущена. Task ID: {task.id}")
 
         return JsonResponse({'task_id': task.id, 'status': 'processing'}) # Возвращаем ID задачи
